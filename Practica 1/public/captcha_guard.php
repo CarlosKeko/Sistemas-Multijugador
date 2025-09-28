@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-session_name('SID');
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }

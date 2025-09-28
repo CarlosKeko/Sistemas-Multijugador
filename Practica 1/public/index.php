@@ -49,6 +49,26 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
     $configuration['{LOGIN_LOGOUT_URL}']  = '?page=logout';
 
 }else if (isset($_POST['register'])) {
+        // CSRF check
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
+        $configuration['{FEEDBACK}'] = 'ERROR Sessió caducada o petició no vàlida (CSRF). Torna-ho a provar.';
+        $template = 'register';
+        $html = file_get_contents('plantilla_' . $template . '.html', true);
+        $html = str_replace(array_keys($configuration), array_values($configuration), $html);
+        echo $html;
+        exit;
+    }
+
+    // CAPTCHA check (antes de crear el usuario)
+    if (!captcha_verify_and_consume($_POST['captcha'] ?? null)) {
+        $configuration['{FEEDBACK}'] = 'ERROR Codi CAPTCHA invàlid o expirat. Torna-ho a provar.';
+        $template = 'register';
+        $html = file_get_contents('plantilla_' . $template . '.html', true);
+        $html = str_replace(array_keys($configuration), array_values($configuration), $html);
+        echo $html;
+        exit;
+    }
+
     // --- Validación servidor ---
     $username = trim($_POST['user_name'] ?? '');
     $password = $_POST['user_password'] ?? '';
