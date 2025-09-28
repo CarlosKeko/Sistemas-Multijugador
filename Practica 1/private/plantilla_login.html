@@ -32,7 +32,14 @@
                 <label for="login_password">Contrasenya</label>
                 <input id="login_password" type="password" name="user_password" required />
                 <!-- el name="login" es lo que detecta PHP -->
-                <input type="submit" name="login" value="Iniciar sessió" />
+                    <div style="display:flex;align-items:center;gap:1rem;margin:0.5rem 0;">
+                        <img id="captcha-img" src="captcha.php" alt="CAPTCHA" style="border:1px solid #ddd;height:50px;" onclick="refreshCaptcha()">
+                        <button type="button" onclick="refreshCaptcha()">↻</button>
+                        <input type="text" name="captcha" placeholder="Escriu el codi" required />
+                    </div>
+                    <input type="hidden" name="csrf_token" value="{CSRF}" />
+                    <input type="submit" name="login" value="Iniciar sessió" />
+
             </form>
         </section>
         <section>

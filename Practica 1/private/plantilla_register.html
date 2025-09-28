@@ -38,7 +38,14 @@
                     placeholder="Mínim 10 caràcters, majúscula, minúscula, número i símbol" 
                     title="La contrasenya ha de tenir almenys 10 caràcters, incloent majúscula, minúscula, número i símbol" 
                     required />
-                <input type="submit" name="register" value="Crear compte" />
+                    <div style="display:flex;align-items:center;gap:1rem;margin:0.5rem 0;">
+                        <img id="captcha-img" src="captcha.php" alt="CAPTCHA" style="border:1px solid #ddd;height:50px;" onclick="refreshCaptcha()">
+                        <button type="button" onclick="refreshCaptcha()">↻</button>
+                     <input type="text" name="captcha" placeholder="Escriu el codi" required />
+                    </div>
+                    <input type="hidden" name="csrf_token" value="{CSRF}" />
+                    <input type="submit" name="register" value="Crear compte" />
+
             </form>
         </section>
         <section>
