@@ -8,7 +8,7 @@ $configuration = array(
     '{LOGIN_LOGOUT_URL}'  => '?page=login',   // ← relativo
     '{METHOD}'            => 'POST',          // ← usar POST en formularios
     '{REGISTER_URL}'      => '?page=register',// ← relativo
-    '{SITE_NAME}'         => 'La meva pàgina'
+    '{SITE_NAME}'         => 'La meva pàgina',
     '{CSRF}'             => '' //genera el token
 
     
