@@ -28,9 +28,10 @@
                     <h2>Inici de sessió</h2>
                 </header>
                 <label for="login_username">Nom d'usuari</label>
-                <input id="login_username" type="text" name="user_name" value="{LOGIN_USERNAME}" />
+                <input id="login_username" type="text" name="user_name" value="{LOGIN_USERNAME}" required />
                 <label for="login_password">Contrasenya</label>
-                <input id="login_password" type="password" name="user_password" />
+                <input id="login_password" type="password" name="user_password" required />
+                <!-- el name="login" es lo que detecta PHP -->
                 <input type="submit" name="login" value="Iniciar sessió" />
             </form>
         </section>
