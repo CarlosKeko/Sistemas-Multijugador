@@ -3,7 +3,7 @@
 
 /*
     - IMPLEMENTACIO DE LA PRACTICA 1 DE SISTEMES MULTIJUGADOR -
-    - AUTORS: JOAN CARLES GARCIA I ADRIAN GARCIA -
+    - AUTORS: Ismael Rodriguez, Robert Lopez, Carlos Urbina
 
     - DESCRIPCIO: Aquest fitxer gestiona el registre, login, logout i recuperacio de contrasenya
       mitjançant SMS. Utilitza una base de dades SQLite per emmagatzemar els usuaris.
@@ -12,26 +12,26 @@
       S'utilitza la API de Nexmo per enviar SMS i Resend per enviar emails 
       (Te un limit baix d'ussos per el que es planteja cambiar en un futur proper).
       La interfície s'administra mitjançant plantilles HTML amb placeholders.
-      La gestió de sessions es fa amb cookies segures i paràmetres adequats.
+      La gestió de sessions es fa amb PHP_SESSION i paràmetres adequats.
 
 */
 $template = 'home';
 $db_connection = 'sqlite:..\private\users.db';
 $configuration = array(
-    '{FEEDBACK}'          => '',
+    '{FEEDBACK}' => '',
     '{LOGIN_LOGOUT_TEXT}' => 'Identificar-me',
-    '{LOGIN_LOGOUT_URL}'  => '?page=login',   
-    '{METHOD}'            => 'POST',           
-    '{REGISTER_URL}'      => '?page=register',
-    '{SITE_NAME}'         => 'La meva pàgina',
-    '{RECUPERAR_PSSW}'    => '?page=recuperar', 
-    
+    '{LOGIN_LOGOUT_URL}' => '?page=login',
+    '{METHOD}' => 'POST',
+    '{REGISTER_URL}' => '?page=register',
+    '{SITE_NAME}' => 'La meva pàgina',
+    '{RECUPERAR_PSSW}' => '?page=recuperar',
+
 );
 session_set_cookie_params([
     'lifetime' => 0,         // cookie d'inici de sesio (s'elimina al tancar el navegador)
-    'path'     => '/',
-    'domain'   => '',        // per defecte
-    'secure'   => false,     
+    'path' => '/',
+    'domain' => '',        // per defecte
+    'secure' => false,
     'httponly' => true,
     'samesite' => 'Lax'
 ]);
@@ -50,15 +50,16 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
     session_destroy();
     header('Location: ?page=login');
     exit;
-
-}else if (!empty($_SESSION['user'])) {
+    
+} else if (!empty($_SESSION['user'])) {
+    $template = 'perfil';
     $configuration['{FEEDBACK}'] = 'Has iniciat sessió com <b>' . htmlentities($_SESSION['user']) . '</b>';
     $configuration['{LOGIN_LOGOUT_TEXT}'] = 'Tancar "sessió"';
-    $configuration['{LOGIN_LOGOUT_URL}']  = '?page=logout';
+    $configuration['{LOGIN_LOGOUT_URL}'] = '?page=logout';
 
-}else if (isset($_POST['register'])) {
+} else if (isset($_POST['register'])) {
 
-    
+
     // CAPTCHA check (antes de crear el usuario)
     if (!captcha_verify_and_consume($_POST['captcha'] ?? null)) {
         $configuration['{FEEDBACK}'] = 'ERROR Codi CAPTCHA invàlid o expirat. Torna-ho a provar.';
@@ -90,7 +91,7 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
             'una majúscula, una minúscula, un número i un símbol.';
         $template = 'register';
         $configuration['{REGISTER_USERNAME}'] = htmlentities($username);
-    }else {
+    } else {
         try {
             $db = new PDO($db_connection);
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -121,8 +122,8 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
         }
     }
 
-    } else if (isset($_POST['request_reset'])) {
-    
+} else if (isset($_POST['request_reset'])) {
+
     // Establim conexio amb la BD
     $db = new PDO($db_connection);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -131,7 +132,7 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
 
     // Obtenim dades del formulari
     $username = $_POST['user_name'] ?? '';
-    $phone    = $_POST['phone'] ?? '';  
+    $phone = $_POST['phone'] ?? '';
 
     // Busquem l'usuari a la BD
     $sql = "SELECT user_id FROM users WHERE user_name = :user_name";
@@ -149,18 +150,18 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
         $_SESSION['reset_code'] = $resetCode;
 
         // === Enviar SMS ===
-        $apiKey    = "d73012ba";
+        $apiKey = "d73012ba";
         $apiSecret = "NgKoGfdHa9LnFKrU";
-        $from      = "MiApp";
-        $to        = $phone;
+        $from = "MiApp";
+        $to = $phone;
         $text = "El teu codi de recuperació es: " . $resetCode;
         $url = "https://rest.nexmo.com/sms/json";
         $data = [
-            'api_key'    => $apiKey,
+            'api_key' => $apiKey,
             'api_secret' => $apiSecret,
-            'to'         => $to,
-            'from'       => $from,
-            'text'       => $text
+            'to' => $to,
+            'from' => $from,
+            'text' => $text
         ];
         // Enviament mitjançant cURL
         $ch = curl_init($url);
@@ -173,13 +174,13 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
 
         $configuration['{FEEDBACK}'] = "S'ha enviat un codi de recuperació al teu telèfon.";
         $template = "reset";
-    // si no existeix, feedback d'error i netejem les dades
+        // si no existeix, feedback d'error i netejem les dades
     } else {
         $configuration['{FEEDBACK}'] = "Usuari no trobat";
         $template = "recuperar";
     }
 
-// processar reset de contrasenya
+    // processar reset de contrasenya
 } else if (isset($_POST['verify_reset'])) {
 
     // Establim conexio amb la BD
@@ -189,7 +190,7 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
     $db->exec("PRAGMA journal_mode = WAL");
 
     // Obtenim dades del formulari
-    $code    = $_POST['reset_code'] ?? '';
+    $code = $_POST['reset_code'] ?? '';
     $newpass = $_POST['new_password'] ?? '';
 
     // Si el codi es correcte i hi ha usuari a la sessio, actualitzem la contrasenya
@@ -238,30 +239,30 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
     $result_row = $query->fetchObject();
 
     if ($result_row && password_verify($_POST['user_password'], $result_row->user_password)) {
-    // Protege contra fijación de sesión
-    session_regenerate_id(true);
-    $_SESSION['user'] = $result_row->user_name;
+        // Protege contra fijación de sesión
+        session_regenerate_id(true);
+        $_SESSION['user'] = $result_row->user_name;
 
-    $configuration['{FEEDBACK}'] = '"Sessió" iniciada com <b>' . htmlentities($_SESSION['user'], ENT_QUOTES, 'UTF-8') . '</b>';
-    $configuration['{LOGIN_LOGOUT_TEXT}'] = 'Tancar "sessió"';
-    $configuration['{LOGIN_LOGOUT_URL}']  = '?page=logout';
-    $template = 'home';
+        $configuration['{FEEDBACK}'] = '"Sessió" iniciada com <b>' . htmlentities($_SESSION['user'], ENT_QUOTES, 'UTF-8') . '</b>';
+        $configuration['{LOGIN_LOGOUT_TEXT}'] = 'Tancar "sessió"';
+        $configuration['{LOGIN_LOGOUT_URL}'] = '?page=logout';
+        $template = 'home';
 
-    $db = null;
-    session_write_close();              // asegura que la sesión se persiste
-    header('Location: ?page=home');     // redirige a home
-    exit;
-
-
-} else {
-    $configuration['{FEEDBACK}'] = '<mark>ERROR: Usuari desconegut o contrasenya incorrecta</mark>';
-
-    $template = 'login';
-    $configuration['{LOGIN_USERNAME}'] = htmlentities($_POST['user_name'] ?? '', ENT_QUOTES, 'UTF-8');
-}
+        $db = null;
+        session_write_close();              // asegura que la sesión se persiste
+        header('Location: ?page=perfil');     // redirige a home
+        exit;
 
 
-// --- navegación por GET (mostrar vistas) ---
+    } else {
+        $configuration['{FEEDBACK}'] = '<mark>ERROR: Usuari desconegut o contrasenya incorrecta</mark>';
+
+        $template = 'login';
+        $configuration['{LOGIN_USERNAME}'] = htmlentities($_POST['user_name'] ?? '', ENT_QUOTES, 'UTF-8');
+    }
+
+
+    // --- navegación por GET (mostrar vistas) ---
 } else if (isset($_GET['page'])) {
 
     if ($_GET['page'] == 'register') {
@@ -273,10 +274,10 @@ if (isset($_GET['page']) && $_GET['page'] === 'logout') {
         $template = 'login';
         $configuration['{LOGIN_USERNAME}'] = '';
 
-    }  else if ($_GET['page'] == 'recuperar') {
+    } else if ($_GET['page'] == 'recuperar') {
         $template = 'recuperar';
         $configuration['{LOGIN_LOGOUT_TEXT}'] = 'Identificar-me';
-        $configuration['{LOGIN_LOGOUT_URL}']  = '?page=login';
+        $configuration['{LOGIN_LOGOUT_URL}'] = '?page=login';
 
     } else {
         $template = 'home';
