@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * IMPORTANTE
+ * En php.ini hay que descomentar la linea "extension=openssl"
+ */
 
 /*
     - IMPLEMENTACIO DE LA PRACTICA 1 DE SISTEMES MULTIJUGADOR -
