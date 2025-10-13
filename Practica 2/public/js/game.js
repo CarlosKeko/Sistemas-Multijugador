@@ -1,7 +1,16 @@
+// Variables globals
 var Player1;
 var Player2;
 var p2_points;
 var p1_points;
+
+// Variables para la puntuación
+var circle;
+var circleInterval;
+var p1_points = 0;
+var p2_points = 0;
+
+
 
 // Connectar al servidor del joc
 function unirseAlJoc() {
@@ -18,6 +27,13 @@ function startGame() {
   Player1 = new component(30, 30, "red", 10, 120);
   Player2 = new component(30, 30, "blue", 300, 120);
   myGameArea.start();
+  createCircle();
+  // Bucle: cada 2 segundos intenta crear un círculo si no hay uno visible
+  circleInterval = setInterval(function() {
+    if (!circle.visible) {
+      createCircle();
+    }
+  }, 2000); // Cambia 2000 por 1000 si quieres 1 segundo
 }
 
 var myGameArea = {
@@ -76,7 +92,36 @@ function updateGameArea() {
   Player1.newPos();
   Player1.update();
   Player2.newPos();
-  Player2.update();s
+  Player2.update();
+  drawCircle();
+  // Comprovar colisiones
+  if (checkCollision(Player1)) {
+    circle.visible = false;
+    p1_points += 1;
+    document.getElementById("p1_score").innerText = p1_points;
+  }
+  if (checkCollision(Player2)) {
+    circle.visible = false;
+    p2_points += 1;
+    document.getElementById("p2_score").innerText = p2_points;
+    
+  }
+  // Mostrar puntuación (opcional)
+  var ctx = myGameArea.context;
+  ctx.fillStyle = "black";
+  ctx.font = "16px Arial";
+  ctx.fillText("P1: " + p1_points, 10, 20);
+  ctx.fillText("P2: " + p2_points, 400, 20);
+
+  // Comprobar si alguien ha ganado
+  if (p1_points >= 10 || p2_points >= 10) {
+    clearInterval(myGameArea.interval);      // Detener el juego
+    clearInterval(circleInterval);           // Detener aparición de círculos
+    ctx.fillStyle = "green";
+    ctx.font = "32px Arial";
+    let winner = p1_points >= 10 ? "¡Gana el Jugador 1!" : "¡Gana el Jugador 2!";
+    ctx.fillText(winner, 120, 140);
+  }
 }
 
 function moveup() {
@@ -103,7 +148,6 @@ function moveright() {
     Player1.speedX += 1;
   }
 }
-// ...existing code...
 
 // Escuchar teclas WASD
 document.addEventListener("keydown", function (event) {
@@ -137,4 +181,38 @@ function gestionarMoviment() {
         alert(data.error);
       }
     });
+}
+
+// Crea el círculo negro para la puntuación
+function createCircle() {
+  // Radio y posición aleatoria dentro del canvas
+  var radius = 15;
+  var x = Math.random() * (myGameArea.canvas.width - 2 * radius) + radius;
+  var y = Math.random() * (myGameArea.canvas.height - 2 * radius) + radius;
+  circle = { x: x, y: y, radius: radius, visible: true };
+}
+
+
+// Dibuja el círculo
+function drawCircle() {
+  if (circle && circle.visible) {
+    var ctx = myGameArea.context;
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = "black";
+    ctx.fill();
+  }
+}
+
+
+function checkCollision(player) {
+  if (!circle.visible) return false;
+  // Centro del jugador
+  var playerCenterX = player.x + player.width / 2;
+  var playerCenterY = player.y + player.height / 2;
+  var dx = playerCenterX - circle.x;
+  var dy = playerCenterY - circle.y;
+  var distance = Math.sqrt(dx * dx + dy * dy);
+  // Colisión si la distancia es menor que la suma de los radios
+  return distance < (circle.radius + Math.max(player.width, player.height) / 2);
 }
