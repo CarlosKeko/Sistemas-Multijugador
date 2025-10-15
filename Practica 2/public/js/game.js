@@ -1,8 +1,11 @@
 // Variables globals
+var idJoc = null;
 var Player1;
 var Player2;
 var p2_points;
 var p1_points;
+var numJugador;
+var bolaVisble = false;
 
 // Variables para la puntuación
 var circle;
@@ -14,12 +17,57 @@ var p2_points = 0;
 
 // Connectar al servidor del joc
 function unirseAlJoc() {
-  fetch("game.php?action=join")
+  console.log("Unint-se al joc...");
+  fetch(`game.php?action=join&circle_x=${circle.x}&circle_y=${circle.y}`)
     .then((response) => response.json())
     .then((data) => {
+      circle.x = data.circle_x;
+      circle.y = data.circle_y;
       idJoc = data.game_id;
       idJugador = data.player_id;
+      numJugador = data.num_jugador;
+      console.log(`ID del joc: ${idJoc}, ID del jugador: ${idJugador}. Ets el ${numJugador}`);
       comprovarEstatDelJoc();
+    });
+}
+
+// Comprovar l'estat del joc cada mig segon
+function comprovarEstatDelJoc() {
+  fetch(`game.php?action=status&game_id=${idJoc}&num_jugador=${numJugador}&circle_x=${circle.x}&circle_y=${circle.y}`)
+    .then(response => response.json())
+    .then(joc => {
+      if (joc.error) {
+        textEstat.innerText = joc.error;
+        return;
+
+      }else if (joc.ok) {
+        console.log(joc.ok);
+      }
+
+      if (numJugador == 1) {
+        // Jugador 1 recibe posición del jugador 2
+        if (joc.player2_x !== null && joc.player2_y !== null) {
+          Player2.x = joc.player2_x;
+          Player2.y = joc.player2_y;
+
+        }
+      } else {
+        // Jugador 2 recibe posición del jugador 1
+        if (joc.player1_x !== null && joc.player1_y !== null) {
+          Player1.x = joc.player1_x;
+          Player1.y = joc.player1_y;
+
+        }
+      }
+      
+      // Actualizar posición del círculo si ha cambiado
+      if (joc.circle_x !== null && joc.circle_y !== null) {
+        circle.x = joc.circle_x;
+        circle.y = joc.circle_y;
+      }
+
+
+      setTimeout(comprovarEstatDelJoc, 500);
     });
 }
 
@@ -29,11 +77,13 @@ function startGame() {
   myGameArea.start();
   createCircle();
   // Bucle: cada 2 segundos intenta crear un círculo si no hay uno visible
-  circleInterval = setInterval(function() {
+  circleInterval = setInterval(function () {
     if (!circle.visible) {
       createCircle();
     }
   }, 2000); // Cambia 2000 por 1000 si quieres 1 segundo
+  unirseAlJoc();
+
 }
 
 var myGameArea = {
@@ -104,7 +154,7 @@ function updateGameArea() {
     circle.visible = false;
     p2_points += 1;
     document.getElementById("p2_score").innerText = p2_points;
-    
+
   }
   // Mostrar puntuación (opcional)
   var ctx = myGameArea.context;
@@ -125,27 +175,52 @@ function updateGameArea() {
 }
 
 function moveup() {
-  if (Player1.speedY > -5) {
-    Player1.speedY -= 1;
+  if (numJugador === 1) { 
+    if (Player1.speedY > -5) {
+      Player1.speedY -= 1;
+    }
+    
+  }else {
+    if (Player2.speedY > -5) {
+      Player2.speedY -= 1;
+    }
   }
 }
 
 function movedown() {
-  if (Player1.speedY < 5) {
-    Player1.speedY += 1;
+  if (numJugador === 1) {
+    if (Player1.speedY < 5) {
+      Player1.speedY += 1;
+    }
+  } else {
+    if (Player2.speedY < 5) {
+      Player2.speedY += 1;
+    }
   }
 }
 
 function moveleft() {
-  if (Player1.speedX > -5) {
-    Player1.speedX -= 1;
+  if (numJugador === 1) {
+    if (Player1.speedX > -5) {
+      Player1.speedX -= 1;
+    }
+  } else {
+    if (Player2.speedX > -5) {
+      Player2.speedX -= 1;
+    }
   }
 }
 
 function moveright() {
   // Poner limites de movimiento
-  if (Player1.speedX < 5) {
-    Player1.speedX += 1;
+  if (numJugador === 1) {
+    if (Player1.speedX < 5) {
+      Player1.speedX += 1;
+    }
+  } else {
+    if (Player2.speedX < 5) {
+      Player2.speedX += 1;
+    }
   }
 }
 
@@ -174,13 +249,26 @@ document.addEventListener("keydown", function (event) {
 
 //Función para gestionar el movimiento con PHP, mandando un POST con fetch
 function gestionarMoviment() {
-  fetch(`game.php?action=click&game_id=${idJoc}`)
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.error) {
-        alert(data.error);
-      }
-    });
+  if (numJugador === 1) {
+    fetch(`game.php?action=movement&game_id=${idJoc}&num_jugador=${numJugador}&player_x=${Player1.x}&player_y=${Player1.y}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          alert(data.error);
+        }
+      });
+    
+  }else {
+      fetch(`game.php?action=movement&game_id=${idJoc}&num_jugador=${numJugador}&player_x=${Player2.x}&player_y=${Player2.y}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          alert(data.error);
+        }
+      });
+  }
+
+  setTimeout(gestionarMoviment, 500);
 }
 
 // Crea el círculo negro para la puntuación
@@ -190,8 +278,18 @@ function createCircle() {
   var x = Math.random() * (myGameArea.canvas.width - 2 * radius) + radius;
   var y = Math.random() * (myGameArea.canvas.height - 2 * radius) + radius;
   circle = { x: x, y: y, radius: radius, visible: true };
-}
+  
+  if (idJoc != null) {
+    fetch(`game.php?action=actualizarCirculo&game_id=${idJoc}&num_jugador=${numJugador}&circle_x=${circle.x}&circle_y=${circle.y}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.error) {
+            alert(data.error);
+          }
+        });
 
+  }
+}
 
 // Dibuja el círculo
 function drawCircle() {
