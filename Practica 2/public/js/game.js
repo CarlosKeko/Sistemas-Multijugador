@@ -19,8 +19,8 @@ let netMoveTimer = null;       // intervalo para enviar movimiento
 let circleInterval = null;     // intervalo para crear círculo (solo J1)
 
 // Para throttling de movimiento
-const NET_MOVE_HZ = 10;        // 10 Hz (cada 100 ms) es suficiente
-const NET_STATUS_HZ = 3;       // ~3 Hz para estado general
+const NET_MOVE_HZ = 50;        // 10 Hz (cada 100 ms) es suficiente
+const NET_STATUS_HZ = 6;       // ~3 Hz para estado general
 const MOVE_EPS = 1.5;          // umbral de cambio
 
 let lastSentX = null;
@@ -279,30 +279,30 @@ document.addEventListener("keydown", function (event) {
 // --- Movimiento local ---
 function moveup() {
   if (numJugador === 1) {
-    if (Player1.speedY > -6) Player1.speedY -= 3;
+     if (Player1.speedY > -3) Player1.speedY -= 1.5;
   } else {
-    if (Player2.speedY > -6) Player2.speedY -= 3;
+     if (Player2.speedY > -3) Player2.speedY -= 1.5;
   }
 }
 function movedown() {
   if (numJugador === 1) {
-    if (Player1.speedY < 6) Player1.speedY += 3;
+     if (Player1.speedY < 3) Player1.speedY += 1.5;
   } else {
-    if (Player2.speedY < 6) Player2.speedY += 3;
+     if (Player2.speedY < 3) Player2.speedY += 1.5;
   }
 }
 function moveleft() {
   if (numJugador === 1) {
-    if (Player1.speedX > -6) Player1.speedX -= 3;
+     if (Player1.speedX > -3) Player1.speedX -= 1.5;
   } else {
-    if (Player2.speedX > -6) Player2.speedX -= 3;
+     if (Player2.speedX > -3) Player2.speedX -= 1.5;
   }
 }
 function moveright() {
   if (numJugador === 1) {
-    if (Player1.speedX < 6) Player1.speedX += 3;
+     if (Player1.speedX < 3) Player1.speedX += 1.5;
   } else {
-    if (Player2.speedX < 6) Player2.speedX += 3;
+     if (Player2.speedX < 3) Player2.speedX += 1.5;
   }
 }
 

@@ -9,6 +9,8 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
+
+
 // Helper para leer parámetros tanto de GET como de POST
 function inparam($key, $default = null) {
     return $_POST[$key] ?? $_GET[$key] ?? $default;
@@ -27,6 +29,7 @@ try {
 }
 
 $accio = inparam('action', '');
+
 
 // Asegurar que existe la columna/tabla esperada (opcional duro)
 // Aquí asumimos que ya existe tabla games con columnas: 
@@ -243,3 +246,4 @@ switch ($accio) {
         echo json_encode(['error' => 'Acció desconeguda']);
         exit;
 }
+
