@@ -1,150 +1,245 @@
 <?php
+// game.php — versión optimizada
 
-session_start();
+session_start();                   // si usas la sesión para identificar al jugador
+$player_session_id = $_SESSION['player_id'] ?? null;
+session_write_close();             // <- MUY IMPORTANTE: evitar bloqueo entre peticiones
 
-// Connectar a la base de dades SQLite
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+
+// Helper para leer parámetros tanto de GET como de POST
+function inparam($key, $default = null) {
+    return $_POST[$key] ?? $_GET[$key] ?? $default;
+}
+
+// Conectar a SQLite con PRAGMAs que reducen bloqueos
 try {
     $db = new PDO('sqlite:../private/games.db');
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->exec('PRAGMA journal_mode=WAL;');
+    $db->exec('PRAGMA synchronous=NORMAL;');
+    $db->exec('PRAGMA busy_timeout=250;');
 } catch (PDOException $e) {
     echo json_encode(['error' => 'Connexió amb la base de dades fallida: ' . $e->getMessage()]);
-    exit();
+    exit;
 }
 
-$accio = isset($_GET['action']) ? $_GET['action'] : '';
+$accio = inparam('action', '');
 
-$jugador1Circulo = false;
-$jugador2Circulo = false;
+// Asegurar que existe la columna/tabla esperada (opcional duro)
+// Aquí asumimos que ya existe tabla games con columnas: 
+// game_id TEXT PK, player1 TEXT, player2 TEXT, player1_x INT, player1_y INT, player2_x INT, player2_y INT, circle_x INT, circle_y INT, winner TEXT NULL
 
 switch ($accio) {
-    case 'join':
-        if (!isset($_SESSION['player_id'])) {
-            $_SESSION['player_id'] = uniqid();
-        } 
-        
-        $player_id = $_SESSION['player_id'];
-        $game_id = null;
-        $numJugador = "";
-        $circle_x = 0;
-        $circle_y = 0;
+    case 'join': {
+        // Re-asignar/crear id de jugador en sesión si no existe
+        if (!$player_session_id) {
+            session_start();
+            $_SESSION['player_id'] = bin2hex(random_bytes(8)); // id más robusto
+            $player_session_id = $_SESSION['player_id'];
+            session_write_close();
+        }
 
-        // Intentar unir-se a un joc existent on player2 sigui null
+        $player_id = $player_session_id;
+        $game_id = null;
+        $numJugador = 0;
+        $circle_x = (int) inparam('circle_x', 0);
+        $circle_y = (int) inparam('circle_y', 0);
+
+        // Intentar unirse a un juego esperando jugador 2
         $stmt = $db->prepare('SELECT * FROM games WHERE player2 IS NULL LIMIT 1');
         $stmt->execute();
         $joc_existent = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($joc_existent) {
             $numJugador = 2;
-            // Unir-se al joc existent com a player2
             $game_id = $joc_existent['game_id'];
-            $circle_x = $joc_existent['circle_x'];
-            $circle_y = $joc_existent['circle_y'];
-            $stmt = $db->prepare('UPDATE games SET player2 = :player_id WHERE game_id = :game_id');
-            $stmt->bindValue(':player_id', $player_id);
-            $stmt->bindValue(':game_id', $game_id);
-            $stmt->execute();
-        } else {
-            $circle_x = $_GET['circle_x'];
-            $circle_y = $_GET['circle_y'];
-            // Crear un nou joc com a player1
-            $numJugador = 1;
-            $game_id = uniqid();
-            $stmt = $db->prepare('INSERT INTO games (game_id, player1, circle_x, circle_y) VALUES (:game_id, :player_id, :circle_x, :circle_y)');
-            $stmt->bindValue(':game_id', $game_id);
-            $stmt->bindValue(':player_id', $player_id);
-            $stmt->bindValue(':circle_x', $circle_x);
-            $stmt->bindValue(':circle_y', $circle_y);
+            // tomar círculo actual del juego existente
+            $circle_x = (int) $joc_existent['circle_x'];
+            $circle_y = (int) $joc_existent['circle_y'];
 
-            $stmt->execute();
+            $stmt = $db->prepare('UPDATE games SET player2 = :player_id WHERE game_id = :game_id');
+            $stmt->execute([':player_id' => $player_id, ':game_id' => $game_id]);
+        } else {
+            // crear nuevo juego como jugador 1
+            $numJugador = 1;
+            $game_id = bin2hex(random_bytes(8));
+            $stmt = $db->prepare('INSERT INTO games (game_id, player1, circle_x, circle_y, player1_x, player1_y, player2_x, player2_y) 
+                                  VALUES (:game_id, :player_id, :cx, :cy, 0, 0, 0, 0)');
+            $stmt->execute([
+                ':game_id'  => $game_id,
+                ':player_id'=> $player_id,
+                ':cx'       => $circle_x,
+                ':cy'       => $circle_y
+            ]);
         }
 
-        echo json_encode(['game_id' => $game_id, 'player_id' => $player_id, 'num_jugador' => $numJugador, 'circle_x' => $circle_x, 'circle_y' => $circle_y]);
-        break;
+        echo json_encode([
+            'game_id'     => $game_id,
+            'player_id'   => $player_id,
+            'num_jugador' => $numJugador,
+            'circle_x'    => $circle_x,
+            'circle_y'    => $circle_y
+        ]);
+        exit;
+    }
 
-    case 'status':        
-        $game_id = $_GET['game_id'];
-        $numJugador = $_GET['num_jugador'];
-        $circle_x = $_GET['circle_x'];
-        $circle_y = $_GET['circle_y'];
+    case 'status': {
+    $game_id = inparam('game_id', '');
+    if ($game_id === '') {
+        echo json_encode(['error' => 'Falta game_id']);
+        exit;
+    }
+
+    $stmt = $db->prepare('SELECT * FROM games WHERE game_id = :game_id');
+    $stmt->execute([':game_id' => $game_id]);
+    $joc = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$joc) {
+        echo json_encode(['error' => 'Joc no trobat']);
+        exit;
+    }
+
+    echo json_encode([
+        'ok'             => 'todo ok',
+        'player1_x'      => $joc['player1_x'],
+        'player1_y'      => $joc['player1_y'],
+        'player2_x'      => $joc['player2_x'],
+        'player2_y'      => $joc['player2_y'],
+        'circle_x'       => $joc['circle_x'],
+        'circle_y'       => $joc['circle_y'],
+        'points_player1' => (int)($joc['points_player1'] ?? 0),
+        'points_player2' => (int)($joc['points_player2'] ?? 0)
+    ]);
+    exit;
+}
+
+
+    case 'movement': {
+        // Aceptamos POST preferentemente
+        $game_id = inparam('game_id', '');
+        $player_x = (int) inparam('player_x', 0);
+        $player_y = (int) inparam('player_y', 0);
+
+        if ($game_id === '' || !$player_session_id) {
+            echo json_encode(['error' => 'Paràmetres invàlids o sessió no vàlida']);
+            exit;
+        }
+
+        $stmt = $db->prepare('SELECT player1, player2, winner FROM games WHERE game_id = :game_id');
+        $stmt->execute([':game_id' => $game_id]);
+        $joc = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$joc || !empty($joc['winner'])) {
+            echo json_encode(['error' => 'Joc finalitzat o no trobat']);
+            exit;
+        }
+
+        if ($joc['player1'] === $player_session_id) {
+            $stmt = $db->prepare('UPDATE games SET player1_x = :x, player1_y = :y WHERE game_id = :game_id');
+            $stmt->execute([':x' => $player_x, ':y' => $player_y, ':game_id' => $game_id]);
+        } elseif ($joc['player2'] === $player_session_id) {
+            $stmt = $db->prepare('UPDATE games SET player2_x = :x, player2_y = :y WHERE game_id = :game_id');
+            $stmt->execute([':x' => $player_x, ':y' => $player_y, ':game_id' => $game_id]);
+        } else {
+            echo json_encode(['error' => 'Jugador invàlid']);
+            exit;
+        }
+
+        echo json_encode(['ok' => 1]);
+        exit;
+    }
+
+    case 'actualizarCirculo': {
+        $game_id  = inparam('game_id', '');
+        $circle_x = (int) inparam('circle_x', 0);
+        $circle_y = (int) inparam('circle_y', 0);
+
+        if ($game_id === '') {
+            echo json_encode(['error' => 'Falta game_id']);
+            exit;
+        }
+
+        $stmt = $db->prepare('UPDATE games SET circle_x = :cx, circle_y = :cy WHERE game_id = :game_id');
+        $stmt->execute([':cx' => $circle_x, ':cy' => $circle_y, ':game_id' => $game_id]);
+
+        echo json_encode(['ok' => 1]);
+        exit;
+    }
+
+    // --- ping (para tu medidor de RTT) ---
+    case 'ping': {
+        echo json_encode([
+            'ok' => 1,
+            'server_time_ms' => (int) round(microtime(true) * 1000)
+        ]);
+        exit;
+    }
+
+    // --- marcar que el círculo ha sido recogido ---
+    case 'circle_collected': {
+        $game_id = inparam('game_id', '');
+        if ($game_id === '') {
+            echo json_encode(['error' => 'Falta game_id']);
+            exit;
+        }
+
+        // Poner el círculo a NULL (señal de "no hay círculo ahora")
+        $stmt = $db->prepare('UPDATE games SET circle_x = NULL, circle_y = NULL WHERE game_id = :game_id');
+        $stmt->execute([':game_id' => $game_id]);
+
+        echo json_encode(['ok' => 1]);
+        exit;
+    }
+
+        // --- sumar punto y eliminar círculo ---
+    case 'add_point': {
+        $game_id = inparam('game_id', '');
+        $player_id = $player_session_id;
+        if ($game_id === '' || !$player_id) {
+            echo json_encode(['error' => 'Falta game_id o sesión inválida']);
+            exit;
+        }
+
+        // Cargar juego
         $stmt = $db->prepare('SELECT * FROM games WHERE game_id = :game_id');
-        $stmt->bindValue(':game_id', $game_id);
-        $stmt->execute();
+        $stmt->execute([':game_id' => $game_id]);
         $joc = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$joc) {
-            echo json_encode(['error' => 'Joc no trobat']);
-
-        }else {
-            if ($numJugador == 1) {
-                echo json_encode([
-                    'ok' => "todo ok",
-                    "player2_x" => $joc['player2_x'],
-                    "player2_y" => $joc['player2_y'],
-                    'circle_x' => $joc['circle_x'],
-                    'circle_y' => $joc['circle_y']
-                ]);
-
-            }else {
-                echo json_encode([
-                    'ok' => "todo ok",
-                    'player1_x' => $joc['player1_x'],
-                    'player1_y' => $joc['player1_y'],
-                    'circle_x' => $joc['circle_x'],
-                    'circle_y' => $joc['circle_y']
-                ]);
-            }
-        }
-    break;
-
-    case "movement":
-        $game_id = $_GET['game_id'];
-        $player_id = $_SESSION['player_id'];
-        $player_x = $_GET['player_x'];
-        $player_y = $_GET['player_y'];
-
-        $stmt = $db->prepare('SELECT * FROM games WHERE game_id = :game_id');
-        $stmt->bindValue(':game_id', $game_id);
-        $stmt->execute();
-        $joc = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$joc || $joc['winner']) {
-            echo json_encode(['error' => 'Joc finalitzat o no trobat']);
-            break;
+            echo json_encode(['error' => 'Juego no encontrado']);
+            exit;
         }
 
-        // Determinar quin jugador ha fet el moviment i actualitzar la seva posició
+        // Actualizar puntuación según jugador
         if ($joc['player1'] === $player_id) {
-            $stmt = $db->prepare('UPDATE games SET player1_x = :player1_x, player1_y = :player1_y WHERE game_id = :game_id');
-            $stmt->bindValue(':game_id', $game_id);
-            $stmt->bindValue(':player1_x', $player_x);
-            $stmt->bindValue(':player1_y', $player_y);
-            $stmt->execute();
-            $joc['points_player1'] += 1; // Actualitzar l'array $joc
-
+            $stmt = $db->prepare('UPDATE games SET points_player1 = points_player1 + 1, circle_x = NULL, circle_y = NULL WHERE game_id = :game_id');
         } elseif ($joc['player2'] === $player_id) {
-            $stmt = $db->prepare('UPDATE games SET player2_x = :player2_x, player2_y = :player2_y WHERE game_id = :game_id');
-            $stmt->bindValue(':game_id', $game_id);
-            $stmt->bindValue(':player2_x', $player_x);
-            $stmt->bindValue(':player2_y', $player_y);
-            $stmt->execute();
-            $joc['points_player2'] += 1; // Actualitzar l'array $joc
-            
+            $stmt = $db->prepare('UPDATE games SET points_player2 = points_player2 + 1, circle_x = NULL, circle_y = NULL WHERE game_id = :game_id');
         } else {
-            echo json_encode(['error' => 'Jugador invàlid']);
-            break;
+            echo json_encode(['error' => 'Jugador inválido']);
+            exit;
         }
-        break;
 
-    case 'actualizarCirculo':
-        $game_id = $_GET['game_id'];
-        $circle_x = $_GET['circle_x'];
-        $circle_y = $_GET['circle_y'];
-        $num_jugador = $_GET['num_jugador'];
-        $stmt = $db->prepare('UPDATE games SET circle_x = :circle_x, circle_y = :circle_y WHERE game_id = :game_id');
-        $stmt->bindValue(':game_id', $game_id);
-        $stmt->bindValue(':circle_x', $circle_x);
-        $stmt->bindValue(':circle_y', $circle_y);
-        $stmt->execute();
-        
-        break;
+        $stmt->execute([':game_id' => $game_id]);
+
+        // Devolver puntuación actualizada
+        $stmt = $db->prepare('SELECT points_player1, points_player2 FROM games WHERE game_id = :game_id');
+        $stmt->execute([':game_id' => $game_id]);
+        $p = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'ok' => 1,
+            'p1_points' => (int)$p['points_player1'],
+            'p2_points' => (int)$p['points_player2']
+        ]);
+        exit;
+    }
+
+
+    default:
+        echo json_encode(['error' => 'Acció desconeguda']);
+        exit;
 }
