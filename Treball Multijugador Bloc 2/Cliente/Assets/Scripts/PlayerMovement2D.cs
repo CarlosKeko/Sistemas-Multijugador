@@ -16,45 +16,36 @@ public class PlayerMovement2D : MonoBehaviour
 
     // Variables de sincronización de red
     private RectTransform rectTransform; // Para leer/escribir la posición UI
-    private Vector2 lastPositionSent;
+    private Vector3 lastPositionSent;
     public float positionUpdateThreshold = 0.5f; // Umbral más alto para física
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>(); // Obtenemos el Rigidbody2D del personaje
-
-
-        // Obtenemos el RectTransform para la sincronización de UI
-        rectTransform = GetComponent<RectTransform>();
-        if (rectTransform == null)
-        {
-            Debug.LogError("PlayerMovement2D requiere un RectTransform para sincronización de red.");
-            enabled = false;
-        }
-
     }
 
     private void Start()
     {
         string nombreObjeto = gameObject.name;
-        if (ClientBehaviour.Instance.perro && nombreObjeto != "perroPersonaje") {
+        if (ClientBehaviour.Instance.perro && nombreObjeto != "perroP") {
             enabled = false;
             return;
 
         }
 
-        if (ClientBehaviour.Instance.creeper && nombreObjeto != "creeperPersonaje")
+        if (ClientBehaviour.Instance.creeper && nombreObjeto != "creeperP")
         {
             enabled = false;
             return;
         }
+        // Solo activar para testeo
+        enabled = true;
 
         if (enabled)
         {
             // Inicializar la última posición enviada con la posición anclada inicial
-            rectTransform.anchoredPosition = new Vector2(-75f, 0f);
+            //rectTransform.anchoredPosition = new Vector2(-75f, 0f);
             lastPositionSent = rectTransform.anchoredPosition;
-            Debug.Log($"INICIO (Física): Posición inicial forzada a {lastPositionSent.x:F2}, {lastPositionSent.y:F2}");
 
         }
     }
@@ -80,7 +71,7 @@ public class PlayerMovement2D : MonoBehaviour
         // Sincronización de posición con el servidor
         if (ClientBehaviour.Instance != null)
         {
-            Vector2 currentPosition = rectTransform.anchoredPosition;
+            Vector3 currentPosition = transform.position;
 
             // Comprobar si la posición ha cambiado lo suficiente
             if ((currentPosition - lastPositionSent).sqrMagnitude > positionUpdateThreshold * positionUpdateThreshold)

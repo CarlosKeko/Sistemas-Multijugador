@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Networking.Transport.Samples.SimpleClientServer", "Unity.Networking.Transport.Samples.SimpleClientServer.csproj", "{97B2680E-16A3-B8E9-5801-66937B64811E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{E61FB506-1FF1-BB8A-7592-AE7E36204913}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{23937C22-E26C-7804-70A7-F6DE1BC6D114}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97B2680E-16A3-B8E9-5801-66937B64811E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97B2680E-16A3-B8E9-5801-66937B64811E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97B2680E-16A3-B8E9-5801-66937B64811E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97B2680E-16A3-B8E9-5801-66937B64811E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E61FB506-1FF1-BB8A-7592-AE7E36204913}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E61FB506-1FF1-BB8A-7592-AE7E36204913}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E61FB506-1FF1-BB8A-7592-AE7E36204913}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E61FB506-1FF1-BB8A-7592-AE7E36204913}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23937C22-E26C-7804-70A7-F6DE1BC6D114}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23937C22-E26C-7804-70A7-F6DE1BC6D114}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23937C22-E26C-7804-70A7-F6DE1BC6D114}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23937C22-E26C-7804-70A7-F6DE1BC6D114}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
