@@ -403,7 +403,7 @@ namespace Unity.Networking.Transport.Samples
                 stream.ReadByte();
             }
 
-            //Debug.Log($"[R] Jugador remoto '{remoteCharacterName}' se movió a {newPosition}");
+            Debug.Log($"[R] Jugador remoto '{remoteCharacterName}' se movió a {newPosition}");
 
             // 3. Notificar al GameManager para que mueva el GameObject
             if (GameManager.Instance != null)
