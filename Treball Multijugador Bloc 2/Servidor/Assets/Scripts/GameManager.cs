@@ -13,6 +13,9 @@ public class GameManager : MonoBehaviour
     public GameObject perroPersonaje;
     public GameObject creeperPersonaje;
 
+    private int healthCreeper = 3;
+    private int healthPerro = 3;
+
 
     public struct CharacterSpawnData
     {
@@ -25,7 +28,7 @@ public class GameManager : MonoBehaviour
     private Dictionary<string, int> playerHealth = new Dictionary<string, int>();
     public float collisionRadius = 300; // Ajustar según el tamaño de tus objetos UI
 
-    public RectTransform enemyReact;
+    public Transform enemyReact;
 
 
     private void Awake()
@@ -114,7 +117,9 @@ public class GameManager : MonoBehaviour
             // ¡YA NO USAMOS GetComponent<RectTransform>()!
             // Aplicamos la posición directamente al Transform (World Space)
             playerObject.transform.position = position;
-            Debug.Log($"HOST/CLIENTE UPDATED [World]: {characterName} a {position.x:F2}, {position.y:F2}");
+            //print("POSICION QUE ENVIAMOS");
+           // print(position);
+           // Debug.Log($"HOST/CLIENTE UPDATED [World]: {characterName} a {position.x:F2}, {position.y:F2}");
         }
         else
         {
@@ -126,11 +131,11 @@ public class GameManager : MonoBehaviour
     private GameObject GetHostCharacterObject(string characterName)
     {
         // Es fundamental que los nombres ("Perro", "Creeper") coincidan con los de ServerBehaviour.cs
-        if (characterName == "Perro")
+        if (characterName == "perroP")
         {
             return perroPersonaje;
         }
-        else if (characterName == "Creeper")
+        else if (characterName == "creeperP")
         {
             return creeperPersonaje;
         }
@@ -143,32 +148,26 @@ public class GameManager : MonoBehaviour
     public void CheckCollisionAndUpdateHealth(string playerName, Vector3 playerPosition)
     {
 
-        Vector3 enemyPosition = Vector3.zero;
-
-        if (enemyReact != null)
-            {
-                enemyPosition = new Vector3(enemyReact.anchoredPosition.x, enemyReact.anchoredPosition.y, 0);
-            }
-
-
-        float distanceX = Mathf.Abs(playerPosition.x - enemyPosition.x);
-
-
-        print("Distancia x:"+ distanceX);
-
-        // 3. Verificar si hay colisión
-        if (distanceX <= collisionRadius)
-        {
             print("Colision");
 
             // Aplicar daño
-            playerHealth[playerName] -= 1;
+            //playerHealth[playerName] -= 1;
+            if(playerName == "perroP")
+            {
+                healthPerro -= 1;
+                print("Perro pierde vida");
+            } else if (playerName == "creeperP")
+            {
+                healthCreeper -= 1;
+                print("Creeper pierde vida");
+            }
 
-            Debug.Log($"SERVIDOR: ¡COLISIÓN! {playerName} golpeado. Vida restante: {playerHealth[playerName]}");
+
+            Debug.Log($"SERVIDOR: ¡COLISIÓN! {playerName} golpeado");
 
             // 4. NOTIFICAR A TODOS LOS CLIENTES SOBRE EL CAMBIO DE VIDA
-            ServerBehaviour.Instance.BroadcastHealthUpdate(playerName, playerHealth[playerName]);
-        }
+            ServerBehaviour.Instance.BroadcastHealthUpdate(playerName);
+        
     }
 
 }

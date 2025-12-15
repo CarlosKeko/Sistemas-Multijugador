@@ -30,7 +30,7 @@ namespace Unity.Networking.Transport.Samples
 
         // Llista de tots els personatges posibles
         private List<string> allCharacters = new List<string> {
-            "Creeper", "Perro" // Ejemplo de personajes
+            "creeperP", "perroP" // Ejemplo de personajes
         };
 
 
@@ -245,9 +245,9 @@ namespace Unity.Networking.Transport.Samples
                                 if (AreAllReady())
                                 {
                                     SendGameStartToAll();
-
-                                    SceneManager.LoadScene("EscenaJuego", LoadSceneMode.Single);
                                     SendCharacterPositionsToAll();
+                                    SceneManager.LoadScene("EscenaJuego", LoadSceneMode.Single);
+                                    
                                 }
                             }
 
@@ -298,8 +298,8 @@ namespace Unity.Networking.Transport.Samples
 
                                 // Llamar al GameManager para que verifique la colisión y actualice la vida
                                 // Pasamos el nombre del personaje y su NUEVA posición
-                                GameManager.Instance.CheckCollisionAndUpdateHealth(charN, newPosition);
                                 GameManager.Instance.UpdateRemotePlayerPosition(charN, newPosition);
+                                
 
                             }
 
@@ -474,7 +474,7 @@ namespace Unity.Networking.Transport.Samples
         void SendCharacterPositionsToAll()
         {
             // 1. Definir posiciones de aparición (hardcodeadas o generadas)
-            Vector2[] spawnPoints = { new Vector2(-5f, 0f), new Vector2(5f, 0f) };
+            Vector2[] spawnPoints = { new Vector2(-5f, 20f), new Vector2(5f, 5f) };
 
             // Crear la lista usando la estructura pública del GameManager
             List<GameManager.CharacterSpawnData> spawnData = new List<GameManager.CharacterSpawnData>();
@@ -515,16 +515,18 @@ namespace Unity.Networking.Transport.Samples
                     
                     m_Driver.EndSend(writer);
                 }
-            }
-            Debug.Log("Sent 'P' message with character positions to all clients.");
 
-            if (GameManager.Instance != null)
-            {
-                // En un servidor dedicado, el localPlayerName puede ser una cadena vacía ""
-                // En un Host, podrías pasar el nombre de un jugador si el host también es jugador.
-                GameManager.Instance.SpawnCharacters(spawnData, "");
-                Debug.Log("Spawned characters in local Server scene.");
+                Debug.Log("Sent 'P' message with character positions to all clients.");
+
+                if (GameManager.Instance != null)
+                {
+                    // En un servidor dedicado, el localPlayerName puede ser una cadena vacía ""
+                    // En un Host, podrías pasar el nombre de un jugador si el host también es jugador.
+                    GameManager.Instance.SpawnCharacters(spawnData, "");
+                    Debug.Log("Spawned characters in local Server scene.");
+                }
             }
+            
         }
 
         // Fragmento de ServerBehaviour.cs (NUEVO MÉTODO)
@@ -596,9 +598,10 @@ namespace Unity.Networking.Transport.Samples
         }
         // Fragmento de ServerBehaviour.cs (NUEVO MÉTODO)
 
-        public void BroadcastHealthUpdate(string playerName, int newHealth)
+        public void BroadcastHealthUpdate(string playerName)
         {
             // Envía el mensaje 'L' (Vida/Health Update) a todos los clientes
+            print("Envio X");
             for (int i = 0; i < m_Connections.Length; i++)
             {
                 NetworkConnection recipient = m_Connections[i];
