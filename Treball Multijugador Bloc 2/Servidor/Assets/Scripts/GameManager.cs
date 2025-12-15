@@ -30,15 +30,12 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        // 1. Asigna la instancia estática AQUI.
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
         Instance = this;
-
-        // NO AÑADAS DontDestroyOnLoad
     }
 
 
@@ -66,13 +63,12 @@ public class GameManager : MonoBehaviour
 
             if (isServerHost)
             {
-                // --- LÓGICA DE SERVER HOST (Objetos Estáticos) ---
 
-                // 1. Crear el nombre del GameObject estático que el servidor tiene en el Canvas
                 string objectName = charName.ToLower() + "Personaje"; // "perroPersonaje", "creeperPersonaje"
 
                 // 2. Buscar el objeto estático en la escena (Lento en el inicio, pero solo una vez)
                 characterObject = GameObject.Find(objectName);
+
 
                 if (characterObject != null)
                 {
@@ -106,27 +102,23 @@ public class GameManager : MonoBehaviour
         // Obtiene la referencia al GameObject estático (perroPersonaje o creeperPersonaje)
         GameObject playerObject = GetHostCharacterObject(characterName);
 
+        // 2. Lógica de Cliente: Si no es Host, buscar en el diccionario (instanciado)
+        if (playerObject == null)
+        {
+            activeCharacters.TryGetValue(characterName, out playerObject);
+        }
+    
+        // --- ACTUALIZACIÓN CRÍTICA ---
         if (playerObject != null && playerObject.activeSelf)
         {
-            // 1. Obtener el RectTransform (Necesario para actualizar UI)
-            RectTransform rect = playerObject.GetComponent<RectTransform>();
-
-            if (rect != null)
-            {
-                // 2. ACTUALIZACIÓN CORRECTA: Usamos la posición anclada (anchoredPosition)
-                // Esto replica la Pos X/Pos Y que viste en el Inspector de UI.
-                rect.anchoredPosition = new Vector2(position.x, position.y);
-
-                Debug.Log($"SERVER HOST UPDATED: {characterName} a {position.x:F2}, {position.y:F2}");
-            }
-            else
-            {
-                Debug.LogError($"Objeto {characterName} no tiene RectTransform para actualizar UI.");
-            }
+            // ¡YA NO USAMOS GetComponent<RectTransform>()!
+            // Aplicamos la posición directamente al Transform (World Space)
+            playerObject.transform.position = position;
+            Debug.Log($"HOST/CLIENTE UPDATED [World]: {characterName} a {position.x:F2}, {position.y:F2}");
         }
-        else // (Si playerObject es null o no está activo)
+        else
         {
-            Debug.LogWarning($"UpdateRemotePlayerPosition: No se encontró o no está activo el personaje '{characterName}' para actualizar en el Host.");
+            Debug.LogWarning($"UpdateRemotePlayerPosition: Objeto '{characterName}' no encontrado/activo.");
         }
     }
 

@@ -474,7 +474,7 @@ namespace Unity.Networking.Transport.Samples
         void SendCharacterPositionsToAll()
         {
             // 1. Definir posiciones de aparición (hardcodeadas o generadas)
-            Vector2[] spawnPoints = { new Vector2(-75, 0f), new Vector2(100f, 100f) };
+            Vector2[] spawnPoints = { new Vector2(-5f, 0f), new Vector2(5f, 0f) };
 
             // Crear la lista usando la estructura pública del GameManager
             List<GameManager.CharacterSpawnData> spawnData = new List<GameManager.CharacterSpawnData>();
