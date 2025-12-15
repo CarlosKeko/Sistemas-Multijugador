@@ -3,23 +3,34 @@ using UnityEngine;
 public class CharacterStats : MonoBehaviour
 {
     public string characterName;    // "Perro", "Creeper", etc.
-    public int maxHealth = 3;
+    [SerializeField] int maxHealth = 3;
     public int currentHealth;
+    [SerializeField] GameObject[] hearts;
 
     private void Awake()
     {
         currentHealth = maxHealth;
     }
 
-    public void TakeDamage()
+    public void TakeDamage(string nombre)
     {
+        if (characterName != nombre) return;
         currentHealth -= 1;
         Debug.Log($"{characterName} recibe 1 de daño. Vida actual: {currentHealth}");
 
         if (currentHealth <= 0)
         {
             currentHealth = 0;
-            Die();
+            //Die();
+        }
+        ActualizarCorazones();
+    }
+
+    void ActualizarCorazones()
+    {
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            hearts[i].SetActive(i < currentHealth);
         }
     }
 

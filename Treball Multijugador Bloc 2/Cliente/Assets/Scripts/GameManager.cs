@@ -173,36 +173,17 @@ public class GameManager : MonoBehaviour
 
         print("UpdateRemotePlayerPositon: " + characterName);
 
-        if (playerObject == null) // -> Si GetHostCharacterObject es NULL, estamos en un cliente normal
+        // LÓGICA DE CLIENTE: Buscar el prefab instanciado en nuestro diccionario
+        if (characterName == "perroP")
         {
-            // LÓGICA DE CLIENTE: Buscar el prefab instanciado en nuestro diccionario
-            if (characterName == "perroP")
-            {
-                perroPersonaje.transform.position = position;
+           perroPersonaje.transform.position = position;
 
-            }
-            else if (characterName == "creeperP")
-            {
-                creeperPersonaje.transform.position = position;
-            }
-
-            if (instancedCharacters.TryGetValue(characterName, out playerObject))
-            {
-                //// Mover el objeto instanciado (Jugador Remoto)
-                //RectTransform rect = playerObject.GetComponent<RectTransform>();
-                //if (rect != null)
-                //{
-                //    // El cliente se mueve con coordenadas de UI (anchoredPosition)
-                //    rect.anchoredPosition = new Vector2(position.x, position.y);
-                //}
-            }
-            else
-            {
-                Debug.LogWarning($"CLIENTE: No se encontró la instancia de '{characterName}' para mover.");
-                return;
-            }
         }
-
+        else if (characterName == "creeperP")
+        {
+           creeperPersonaje.transform.position = position;
+        }
+        
         // --- CÓDIGO COMÚN (Host o Cliente Remoto) ---
         if (playerObject != null && playerObject.activeSelf)
         {
@@ -252,7 +233,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        stats.TakeDamage();
+        stats.TakeDamage(characterName);
 
 
     }
