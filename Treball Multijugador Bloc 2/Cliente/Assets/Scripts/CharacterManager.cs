@@ -7,13 +7,27 @@ using UnityEngine.UI;
 
 public class CharacterManager : MonoBehaviour
 {
+    public static CharacterManager Instance;
 
-    public Transform perro;
+    public GameObject perro;
 
-    public Transform creeper;
+    public GameObject creeper;
+    private void Awake()
+    {
 
+
+        // Opcional: si quieres que sobreviva entre escenas
+        // DontDestroyOnLoad(gameObject);
+    }
     private void Start()
     {
+        Debug.Log("Instanciando CharacterManger");
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
         float posicionXPerro = ClientBehaviour.Instance.posXPerro;
         float posicionYPerro = ClientBehaviour.Instance.posYPerro;
         float posicionXCreeper = ClientBehaviour.Instance.posXCreeper;
@@ -26,6 +40,8 @@ public class CharacterManager : MonoBehaviour
         creeper.gameObject.SetActive(true);
         creeper.transform.position = new Vector3(posicionXCreeper, posicionYCreeper, 0);
 
+        //Debug.Log(posicionXPerro + " , " + posicionYPerro);
+
         if (ClientBehaviour.Instance.perro == true) {
 
             Debug.Log("Perro visto");
@@ -33,6 +49,7 @@ public class CharacterManager : MonoBehaviour
 
             if (perro != null)
             {
+
             }
         }
         if (ClientBehaviour.Instance.creeper == true)
@@ -46,5 +63,19 @@ public class CharacterManager : MonoBehaviour
     private void Update()
     {
         
+    }
+
+    public void actualizarPosicion(string nombrePersonaje, Vector3 posicion)
+    {
+        Debug.Log("Entrando en actuaizar posicion");
+        if (nombrePersonaje == "perroP")
+        {
+            perro.transform.position = posicion;
+
+        }else if (nombrePersonaje == "creeperP")
+        {
+            creeper.transform.position = posicion;
+
+        }
     }
 }

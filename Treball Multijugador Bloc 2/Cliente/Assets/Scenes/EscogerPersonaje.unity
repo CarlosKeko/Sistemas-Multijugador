@@ -632,7 +632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ea2b9788ef30b14bbf7766dd5a544c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterName: Perro
+  characterName: perroP
 --- !u!114 &1356802899
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -733,8 +733,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2dc6315d069d0a4aacbe203091c5a54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CharacterButtonPrefab: {fileID: 0}
-  ButtonParentContainer: {fileID: 0}
 --- !u!1 &1619582289
 GameObject:
   m_ObjectHideFlags: 0
@@ -853,7 +851,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ea2b9788ef30b14bbf7766dd5a544c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterName: Creeper
+  characterName: creeperP
 --- !u!114 &1619582296
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -73,6 +73,7 @@ namespace Unity.Networking.Transport.Samples
 
         void Update()
         {
+            Debug.Log("Entrando a update de cliente behaviour");
             if (!m_Driver.IsCreated)
                 return;
 
@@ -84,8 +85,12 @@ namespace Unity.Networking.Transport.Samples
             DataStreamReader stream;
             NetworkEvent.Type cmd;
 
+            Debug.Log("Antes del while");
+
             while ((cmd = m_Connection.PopEvent(m_Driver, out stream)) != NetworkEvent.Type.Empty)
             {
+                Debug.Log("Dentro del while");
+
                 if (cmd == NetworkEvent.Type.Connect)
                 {
                     Debug.Log("Conectado al servidor.");
@@ -245,10 +250,18 @@ namespace Unity.Networking.Transport.Samples
             // Logica para seleccion aceptada
 
 
-            if (personajeSeleccionado == "Creeper")
+            if (personajeSeleccionado == "creeperP")
+            {
                 creeper = true;
-            if (personajeSeleccionado == "Perro")
+                Debug.Log("CREEPER SELECCIONADO");
+
+            }
+            if (personajeSeleccionado == "perroP")
+            {
                 perro = true;
+                Debug.Log("PERRO SELECCIONADO");
+
+            }
 
 
             // Consumir cualquier byte restante en el paquete
@@ -317,6 +330,17 @@ namespace Unity.Networking.Transport.Samples
 
                 spawnList.Add(data);
                 Debug.Log($"   -> Datos de Spawn: {data.CharacterName} en {data.Position}");
+                if (data.CharacterName == "perroP")
+                {
+                    posXPerro = posX;
+                    posYPerro = posY;
+
+                }else if (data.CharacterName == "creeperP")
+                {
+                    posXCreeper = posX;
+                    posYCreeper = posY;
+
+                }
             }
 
             // 3. Consumir cualquier byte restante en el paquete
@@ -327,6 +351,7 @@ namespace Unity.Networking.Transport.Samples
 
             // 4. Llamar al GameManager para crear los personajes en la escena
             GameManager.Instance.SpawnCharacters(spawnList, personajeSeleccionado);
+
             if (GameManager.Instance != null)
             {
                 // Pasamos la lista de TODOS los personajes y el nombre del personaje LOCAL

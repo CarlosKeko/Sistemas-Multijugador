@@ -27,6 +27,7 @@ public class PlayerMovement2D : MonoBehaviour
     private void Start()
     {
         string nombreObjeto = gameObject.name;
+        Debug.Log("NOMBRE PERSONAJE: " + gameObject.name );
         if (ClientBehaviour.Instance.perro && nombreObjeto != "perroP") {
             enabled = false;
             return;
@@ -39,13 +40,15 @@ public class PlayerMovement2D : MonoBehaviour
             return;
         }
         // Solo activar para testeo
-        enabled = true;
+        //enabled = true;
 
         if (enabled)
         {
             // Inicializar la última posición enviada con la posición anclada inicial
             //rectTransform.anchoredPosition = new Vector2(-75f, 0f);
-            lastPositionSent = rectTransform.anchoredPosition;
+            //lastPositionSent = rectTransform.anchoredPosition;
+            //rb.transform.position = lastPositionSent; NO VA
+            //rb.transform.position = new Vector3(3, 3, 0);
 
         }
     }
@@ -90,7 +93,7 @@ public class PlayerMovement2D : MonoBehaviour
 
     public void takeDamage()
     {
-
+        Debug.Log("Entra en takeDamage");
     }
 
     // Detectar cu�ndo toca el suelo

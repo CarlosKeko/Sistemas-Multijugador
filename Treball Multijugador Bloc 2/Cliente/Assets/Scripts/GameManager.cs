@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     public GameObject perroPersonaje;
     public GameObject creeperPersonaje;
     public GameObject goombaEnemy;
-    public RectTransform gombaTransform;
+    
     // -----------------------------------------------------------------------
 
     // Diccionario para almacenar instancias de personajes instanciados (solo CLIENTE)
@@ -57,15 +57,15 @@ public class GameManager : MonoBehaviour
     // Método que mapea el nombre del personaje al objeto estático (Host)
     private GameObject GetHostCharacterObject(string characterName)
     {
-        if (characterName == "Perro")
+        if (characterName == "perroP")
         {
             return perroPersonaje;
         }
-        else if (characterName == "Creeper")
+        else if (characterName == "creeperP")
         {
             return creeperPersonaje;
 
-        }else if (characterName == "GombaEnemy")
+        }else if (characterName == "goombaP")
         {
             return goombaEnemy;
         }
@@ -107,41 +107,58 @@ public class GameManager : MonoBehaviour
             }
             else // LÓGICA DE CLIENTE (Instanciar Prefabs)
             {
-                // 1. Encontrar el Prefab correcto
-                GameObject prefab = characterPrefabs.Find(p => p.characterName == charName).prefab;
-                if (prefab == null)
-                {
-                    Debug.LogError($"CLIENT ERROR: Prefab no encontrado para: {charName}");
-                    continue;
-                }
+               // //1.Encontrar el Prefab correcto
+               //GameObject prefab = characterPrefabs.Find(p => p.characterName == charName).prefab;
+               // if (prefab == null)
+               // {
 
-                // 2. Instanciar el personaje
-                characterObject = Instantiate(prefab, data.Position, Quaternion.identity);
+               //     Debug.LogError($"CLIENT ERROR: Prefab no encontrado para: {charName}");
+               //     continue;
+               // }
 
-                // --- NUEVO DEBUG LOG: Confirmar que la instancia se creó y el papel ---
-                if (charName != localPlayerName)
-                {
-                    Debug.Log($"[CLIENTE] INSTANCIA REMOTA CREADA: {charName}.");
-                }
+               // //2.Instanciar el personaje
+               // characterObject = Instantiate(prefab, data.Position, Quaternion.identity);
 
-                // 3. Si es el personaje local, añadir el PlayerMovement2D (que contiene el script de envío 'M')
-                if (charName == localPlayerName)
-                {
-                    // Nota: Si PlayerMovement2D ya está en el prefab, esta línea no es necesaria.
-                    // Si estás usando un prefab de control, asegúrate de que tiene el RectTransform o busca en el padre.
-                    // Asumimos que PlayerMovement2D ya está en el prefab principal.
-                    Debug.Log($"CLIENT SPAWN: Jugador local {charName} creado.");
-                }
+               // //if (charName == "perroP")
+               // //{
+               // //    Debug.Log("Entrando en perro P");
+               // //    perroPersonaje.transform.position = data.Position;
 
-                // 4. Guardar la instancia en el diccionario
-                if (characterObject != null)
-                {
-                    instancedCharacters[charName] = characterObject;
+               // //}
+               // //else if (charName == "creeperP")
+               // //{
+               // //    Debug.Log("Entrando en creeper P");
+               // //    creeperPersonaje.transform.position = data.Position;
+               // //}
 
-                    // --- NUEVO DEBUG LOG: Confirmar que se añadió al diccionario ---
-                    Debug.Log($"[CLIENTE] Añadido al diccionario: {charName}. Total de objetos: {instancedCharacters.Count}");
-                    // --------------------------------------------------------------
-                }
+               // //---NUEVO DEBUG LOG: Confirmar que la instancia se creó y el papel-- -
+               // if (charName != localPlayerName)
+               // {
+               //     Debug.Log($"[CLIENTE] INSTANCIA REMOTA CREADA: {charName}.");
+               // }
+
+               // //3.Si es el personaje local, añadir el PlayerMovement2D(que contiene el script de envío 'M')
+               // if (charName == localPlayerName)
+               // {
+               //     // Nota: Si PlayerMovement2D ya está en el prefab, esta línea no es necesaria.
+               //     // Si estás usando un prefab de control, asegúrate de que tiene el RectTransform o busca en el padre.
+               //     // Asumimos que PlayerMovement2D ya está en el prefab principal.
+               //     Debug.Log($"CLIENT SPAWN: Jugador local {charName} creado.");
+               // }
+
+               // //4.Guardar la instancia en el diccionario
+               // if (characterObject != null)
+               // {
+               //     instancedCharacters[charName] = characterObject;
+
+               //     // --- NUEVO DEBUG LOG: Confirmar que se añadió al diccionario ---
+               //     Debug.Log($"[CLIENTE] Añadido al diccionario: {charName}. Total de objetos: {instancedCharacters.Count}");
+               //     // --------------------------------------------------------------
+               // }
+
+                //CharacterManager.Instance.actualizarPosicion(charName, data.Position);
+
+
             }
         }
     }
@@ -198,16 +215,10 @@ public class GameManager : MonoBehaviour
 
     public void UpdateRemoteEnemyPosition(string characterName, Vector3 position)
     {
-        GameObject playerObject = GetHostCharacterObject(characterName); // Intenta obtener el objeto estático
-
         print(characterName);
 
-        RectTransform rect = gombaTransform;
-        if (rect != null)
-        {
-            // El cliente se mueve con coordenadas de UI (anchoredPosition)
-            rect.anchoredPosition = new Vector2(position.x, position.y);
-        }
+        // El cliente se mueve con coordenadas de UI (anchoredPosition)
+        goombaEnemy.transform.position = new Vector3(position.x, position.y, 0);
     }
 
     public void UpdateDamage(string characterName)
