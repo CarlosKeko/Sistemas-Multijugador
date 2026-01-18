@@ -41,8 +41,17 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Fondo
+    uniqueID: 2219249635
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Suelo
+    uniqueID: 1667924621
+    locked: 0
+  - name: Frente
+    uniqueID: 2193276813
     locked: 0
   m_RenderingLayers:
   - Default
