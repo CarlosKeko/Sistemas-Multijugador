@@ -14,6 +14,17 @@ public class PlayerMovement2D : MonoBehaviour
     bool isGrounded = false;      // Para saber si est� tocando el suelo
 
 
+
+    // Solo activar en el pj que hara doble salto
+    public bool soloDobleSalto;
+    public bool doubleJump;
+
+    // Solo activar en el pj que disparara
+    public bool disparar;
+
+    public ProjectilBehaviour ProjectilPrefab;
+    public Transform LaunchOffset;
+
     // Variables de sincronización de red
     private RectTransform rectTransform; // Para leer/escribir la posición UI
     private Vector3 lastPositionSent;
@@ -44,29 +55,53 @@ public class PlayerMovement2D : MonoBehaviour
 
         if (enabled)
         {
-            // Inicializar la última posición enviada con la posición anclada inicial
-            //rectTransform.anchoredPosition = new Vector2(-75f, 0f);
-            //lastPositionSent = rectTransform.anchoredPosition;
-            //rb.transform.position = lastPositionSent; NO VA
-            //rb.transform.position = new Vector3(3, 3, 0);
 
         }
     }
 
     void Update()
     {
-        // Leer input horizontal (A/D, flechas izquierda/derecha)
+        // 1. Leer input horizontal
         float inputX = Input.GetAxisRaw("Horizontal");
-
-        // Mover al personaje usando la velocidad del rigidbody
         rb.linearVelocity = new Vector2(inputX * speed, rb.linearVelocity.y);
 
-        // Saltar: solo si est� en el suelo
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        // 2. Lógica de reseteo al tocar el suelo
+        if (isGrounded)
         {
-            // Ponemos la velocidad vertical directamente para un salto "seco"
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            // Si estamos en el suelo, habilitamos la posibilidad de doble salto 
+            // solo si el personaje tiene esa habilidad activa.
+            if (soloDobleSalto)
+            {
+                doubleJump = true;
+            }
+            else
+            {
+                doubleJump = false;
+            }
         }
+
+        // 3. Lógica de Salto
+        if (Input.GetButtonDown("Jump"))
+        {
+            if (isGrounded)
+            {
+                // Salto normal
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            }
+            else if (doubleJump)
+            {
+                // Doble salto (solo entrará aquí si doubleJump es true)
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+                doubleJump = false; // Consumimos el doble salto
+            }
+        }
+
+        if (Input.GetButtonDown("Fire1") && disparar)
+        {
+            // Disparar un proyectil
+            print("Disparar");
+            Instantiate(ProjectilPrefab, LaunchOffset.position, LaunchOffset.rotation);
+    }
     }
 
     void FixedUpdate()
@@ -134,4 +169,5 @@ public class PlayerMovement2D : MonoBehaviour
             isGrounded = false;
         }
     }
+        
 }
