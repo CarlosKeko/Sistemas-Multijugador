@@ -59,8 +59,7 @@ public class EnemyController : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
 
-        print("Colisison");
-
+        print(other.gameObject);
         // Solo el servidor debe procesar esta lógica
         if (!enabled) return;
 
@@ -80,7 +79,10 @@ public class EnemyController : MonoBehaviour
                 // Nota: Aquí estamos usando la posición y el nombre del Transform que COLISIONÓ.
                 // Si el objeto se llama "perroP(Clone)", necesitarás ajustarlo si usas la normalización de nombres.
 
-                GameManager.Instance.CheckCollisionAndUpdateHealth(playerName, playerPosition);
+                //GameManager.Instance.CheckCollisionAndUpdateHealth(playerName, playerPosition);
+
+                // Opcional: Log para confirmar que la detección física funcionó
+                Debug.Log($"SERVIDOR TRIGGER: ¡Detección física de colisión con {playerName}!");
             }
         }
     }

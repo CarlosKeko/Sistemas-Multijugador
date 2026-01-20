@@ -244,16 +244,14 @@ namespace Unity.Networking.Transport.Samples
 
                                 if (AreAllReady())
                                 {
-                                    SendGameStartToAll();
+                                    SendGameStartToAll(m_Connections.Length);
                                     SendCharacterPositionsToAll();
                                     SceneManager.LoadScene("EscenaJuego", LoadSceneMode.Single);
                                     
                                 }
                             }
-
                             else
                             {
-
                                 // Enviar denegación al cliente
                                 SendSelectionResponse(clientConnection, 'F', selectedChar);
                                 Debug.Log($"Selection DENIED: {selectedChar} is already taken.");
@@ -410,15 +408,16 @@ namespace Unity.Networking.Transport.Samples
         }
 
         // Enviamos a los clientes que el juego ha empezado
-        void SendGameStartToAll()
+        void SendGameStartToAll(int n)
         {
-            m_Driver.BeginSend(myPipeline, m_Connections[0], out var writer0);
-            writer0.WriteByte((byte)'G');
-            m_Driver.EndSend(writer0);
+            
 
-            m_Driver.BeginSend(myPipeline, m_Connections[1], out var writer1);
-            writer1.WriteByte((byte)'G');
-            m_Driver.EndSend(writer1);
+            for (int i = 0; i < n; i++)
+            {
+                m_Driver.BeginSend(myPipeline, m_Connections[i], out var writer0);
+                writer0.WriteByte((byte)'G');
+                m_Driver.EndSend(writer0);
+            }
 
             Debug.Log("GAME START: Sending 'G' message to all clients.");
             SendCharacterPositionsToAll();
@@ -442,16 +441,18 @@ namespace Unity.Networking.Transport.Samples
         private bool AreAllReady()
         {
 
-           
-            
             // 1. Debe haber al menos 2 conexiones activas para empezar
-            if (m_Connections.Length < 2)
+            if (m_Connections.Length < 1) // Test con 1 conexión
             {
+                print("No estamos listos");
                 return false;
+            } else
+            {
+                return true;
             }
 
             // 2. El número de selecciones debe ser igual al número de conexiones
-            return m_ClientSelections.Count == m_Connections.Length;
+            // return m_ClientSelections.Count == m_Connections.Length;
             
         }
 
@@ -528,8 +529,6 @@ namespace Unity.Networking.Transport.Samples
             }
             
         }
-
-        // Fragmento de ServerBehaviour.cs (NUEVO MÉTODO)
 
         void BroadcastMovement(NetworkConnection sender, Vector3 position)
         {

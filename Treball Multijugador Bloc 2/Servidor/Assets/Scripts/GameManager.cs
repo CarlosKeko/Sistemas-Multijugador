@@ -1,36 +1,48 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using UnityEngine;
 using Unity.Networking.Transport.Samples; // Necesario para la struct CharacterSpawnData
 
 public class GameManager : MonoBehaviour
 {
-    // 1. Singleton: Acceso est·tico a la ˙nica instancia
+    // 1. Singleton: Acceso est√°tico a la √∫nica instancia
     public static GameManager Instance;
 
-    private Dictionary<string, GameObject> activeCharacters = new Dictionary<string, GameObject>();
-
-    [Header("Personajes")]
+    // --- REFERENCIAS P√öBLICAS PARA EL SERVIDOR HOST (ASIGNAR EN INSPECTOR) ---
+    [Header("Objetos Est√°ticos del Servidor")]
     public GameObject perroPersonaje;
     public GameObject creeperPersonaje;
+    public GameObject goombaEnemy;
+    
+    // -----------------------------------------------------------------------
 
-    private int healthCreeper = 3;
-    private int healthPerro = 3;
+    // Diccionario para almacenar instancias de personajes instanciados (solo CLIENTE)
+    // El string es el CharacterName ("Perro", "Creeper").
+    private Dictionary<string, GameObject> instancedCharacters = new Dictionary<string, GameObject>();
 
-
+    // --- ESTRUCTURA DE DATOS P√öBLICA (para compartir entre scripts) ---
     public struct CharacterSpawnData
     {
         public string CharacterName;
         public Vector3 Position;
     }
 
+    [System.Serializable]
+    public struct CharacterPrefabMapping
+    {
+        public string characterName;
+        public GameObject prefab;
+    }
 
-    // Necesitas una variable para el estado de vida, por ejemplo:
-    private Dictionary<string, int> playerHealth = new Dictionary<string, int>();
-    public float collisionRadius = 300; // Ajustar seg˙n el tamaÒo de tus objetos UI
+    // Asigna los prefabs de los personajes aqu√≠ en el Inspector (Solo Cliente)
+    public List<CharacterPrefabMapping> characterPrefabs;
 
-    public Transform enemyReact;
+    // Referencia al prefab del script de control local del jugador
+    public GameObject LocalPlayerControlPrefab;
 
 
+    // =========================================================================
+    // INICIALIZACI√ìN
+    // =========================================================================
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -42,21 +54,33 @@ public class GameManager : MonoBehaviour
     }
 
 
-    private void Start()
+    // M√©todo que mapea el nombre del personaje al objeto est√°tico (Host)
+    private GameObject GetHostCharacterObject(string characterName)
     {
-        // Llama al servidor para que sepa que ya puede procesar mensajes
-        if (ServerBehaviour.Instance != null)
+        if (characterName == "perroP")
         {
-            ServerBehaviour.Instance.NotifyGameSceneReady();
+            return perroPersonaje;
         }
+        else if (characterName == "creeperP")
+        {
+            return creeperPersonaje;
+
+        }else if (characterName == "goombaP")
+        {
+            return goombaEnemy;
+        }
+        return null;
     }
 
+    // =========================================================================
+    // SPAWNING INICIAL (MENSAJE 'P')
+    // =========================================================================
 
     public void SpawnCharacters(List<CharacterSpawnData> spawnData, string localPlayerName)
     {
         Debug.Log($"Iniciando spawning de {spawnData.Count} personajes. Local player: {localPlayerName}");
 
-        // Determinar si estamos ejecutando en el servidor host
+        // El servidor llama con localPlayerName == ""
         bool isServerHost = string.IsNullOrEmpty(localPlayerName);
 
         foreach (var data in spawnData)
@@ -66,108 +90,151 @@ public class GameManager : MonoBehaviour
 
             if (isServerHost)
             {
-
-                string objectName = charName.ToLower() + "Personaje"; // "perroPersonaje", "creeperPersonaje"
-
-                // 2. Buscar el objeto est·tico en la escena (Lento en el inicio, pero solo una vez)
-                characterObject = GameObject.Find(objectName);
-
+                // --- L√ìGICA DE SERVER HOST (Objetos Est√°ticos) ---
+                characterObject = GetHostCharacterObject(charName);
 
                 if (characterObject != null)
                 {
-                    // 3. Activar el objeto que por defecto est· desactivado
                     characterObject.SetActive(true);
-                    // 4. Establecer la posiciÛn inicial
+                    // Establecer la posici√≥n inicial del Rigidbody/Transform (el RectTransform se mover√° con √©l)
                     characterObject.transform.position = data.Position;
-                    Debug.Log($"SERVER HOST: Activado objeto est·tico '{charName}' en {data.Position}");
+                    Debug.Log($"SERVER HOST: Activado objeto est√°tico '{charName}' en {data.Position}");
                 }
                 else
                 {
-                    Debug.LogError($"SERVER HOST ERROR: No se encontrÛ el objeto est·tico '{objectName}'.");
+                    Debug.LogError($"SERVER HOST ERROR: La referencia p√∫blica para '{charName}' no est√° asignada o el nombre es incorrecto.");
                 }
             }
- 
-            
-
-            // Almacenar el objeto (est·tico o instanciado) en el diccionario
-            if (characterObject != null)
+            else // L√ìGICA DE CLIENTE (Instanciar Prefabs)
             {
-                // Usamos el nombre base (ej. "Perro") como clave
-                activeCharacters[charName] = characterObject;
+               // //1.Encontrar el Prefab correcto
+               //GameObject prefab = characterPrefabs.Find(p => p.characterName == charName).prefab;
+               // if (prefab == null)
+               // {
+
+               //     Debug.LogError($"CLIENT ERROR: Prefab no encontrado para: {charName}");
+               //     continue;
+               // }
+
+               // //2.Instanciar el personaje
+               // characterObject = Instantiate(prefab, data.Position, Quaternion.identity);
+
+               // //if (charName == "perroP")
+               // //{
+               // //    Debug.Log("Entrando en perro P");
+               // //    perroPersonaje.transform.position = data.Position;
+
+               // //}
+               // //else if (charName == "creeperP")
+               // //{
+               // //    Debug.Log("Entrando en creeper P");
+               // //    creeperPersonaje.transform.position = data.Position;
+               // //}
+
+               // //---NUEVO DEBUG LOG: Confirmar que la instancia se cre√≥ y el papel-- -
+               // if (charName != localPlayerName)
+               // {
+               //     Debug.Log($"[CLIENTE] INSTANCIA REMOTA CREADA: {charName}.");
+               // }
+
+               // //3.Si es el personaje local, a√±adir el PlayerMovement2D(que contiene el script de env√≠o 'M')
+               // if (charName == localPlayerName)
+               // {
+               //     // Nota: Si PlayerMovement2D ya est√° en el prefab, esta l√≠nea no es necesaria.
+               //     // Si est√°s usando un prefab de control, aseg√∫rate de que tiene el RectTransform o busca en el padre.
+               //     // Asumimos que PlayerMovement2D ya est√° en el prefab principal.
+               //     Debug.Log($"CLIENT SPAWN: Jugador local {charName} creado.");
+               // }
+
+               // //4.Guardar la instancia en el diccionario
+               // if (characterObject != null)
+               // {
+               //     instancedCharacters[charName] = characterObject;
+
+               //     // --- NUEVO DEBUG LOG: Confirmar que se a√±adi√≥ al diccionario ---
+               //     Debug.Log($"[CLIENTE] A√±adido al diccionario: {charName}. Total de objetos: {instancedCharacters.Count}");
+               //     // --------------------------------------------------------------
+               // }
+
+                //CharacterManager.Instance.actualizarPosicion(charName, data.Position);
+
+
             }
         }
     }
 
-    // Fragmento de GameManager.cs (MÈtodo UpdateRemotePlayerPosition MODIFICADO)
+    // =========================================================================
+    // ACTUALIZACI√ìN DE POSICI√ìN REMOTA (MENSAJES 'R' y 'M')
+    // =========================================================================
 
     public void UpdateRemotePlayerPosition(string characterName, Vector3 position)
     {
-        // Obtiene la referencia al GameObject est·tico (perroPersonaje o creeperPersonaje)
-        GameObject playerObject = GetHostCharacterObject(characterName);
+        GameObject playerObject = GetHostCharacterObject(characterName); // Intenta obtener el objeto est√°tico
 
-        // 2. LÛgica de Cliente: Si no es Host, buscar en el diccionario (instanciado)
-        if (playerObject == null)
-        {
-            activeCharacters.TryGetValue(characterName, out playerObject);
-        }
-    
-        // --- ACTUALIZACI”N CRÕTICA ---
-        if (playerObject != null && playerObject.activeSelf)
-        {
-            // °YA NO USAMOS GetComponent<RectTransform>()!
-            // Aplicamos la posiciÛn directamente al Transform (World Space)
-            playerObject.transform.position = position;
-            //print("POSICION QUE ENVIAMOS");
-           // print(position);
-           // Debug.Log($"HOST/CLIENTE UPDATED [World]: {characterName} a {position.x:F2}, {position.y:F2}");
-        }
-        else
-        {
-            Debug.LogWarning($"UpdateRemotePlayerPosition: Objeto '{characterName}' no encontrado/activo.");
-        }
-    }
+        print("UpdateRemotePlayerPositon: " + characterName);
 
-    // Este mÈtodo es nuevo y nos permite mapear el nombre al objeto est·tico de forma segura
-    private GameObject GetHostCharacterObject(string characterName)
-    {
-        // Es fundamental que los nombres ("Perro", "Creeper") coincidan con los de ServerBehaviour.cs
+        // L√ìGICA DE CLIENTE: Buscar el prefab instanciado en nuestro diccionario
         if (characterName == "perroP")
         {
-            return perroPersonaje;
+           perroPersonaje.transform.position = position;
+
         }
         else if (characterName == "creeperP")
         {
-            return creeperPersonaje;
+           creeperPersonaje.transform.position = position;
         }
-        return null;
-    }
-
-
-
-
-    public void CheckCollisionAndUpdateHealth(string playerName, Vector3 playerPosition)
-    {
-
-            print("Colision");
-
-            // Aplicar daÒo
-            //playerHealth[playerName] -= 1;
-            if(playerName == "perroP")
-            {
-                healthPerro -= 1;
-                print("Perro pierde vida");
-            } else if (playerName == "creeperP")
-            {
-                healthCreeper -= 1;
-                print("Creeper pierde vida");
-            }
-
-
-            Debug.Log($"SERVIDOR: °COLISI”N! {playerName} golpeado");
-
-            // 4. NOTIFICAR A TODOS LOS CLIENTES SOBRE EL CAMBIO DE VIDA
-            ServerBehaviour.Instance.BroadcastHealthUpdate(playerName);
         
+        // --- C√ìDIGO COM√öN (Host o Cliente Remoto) ---
+        if (playerObject != null && playerObject.activeSelf)
+        {
+            // Si es un Host (el objeto est√°tico se encontr√≥ arriba) o un Cliente que encontr√≥ su instancia:
+            RectTransform rect = playerObject.GetComponent<RectTransform>();
+
+            if (rect != null)
+            {
+                // 2. Actualizar la posici√≥n anclada con los datos recibidos
+                rect.anchoredPosition = new Vector2(position.x, position.y);
+
+                //Debug.Log($"HOST/CLIENTE UPDATED: {characterName} a {position.x:F2}, {position.y:F2}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"UpdateRemotePlayerPosition: Objeto '{characterName}' no est√° activo o no tiene RectTransform.");
+        }
     }
 
+    public void UpdateRemoteEnemyPosition(string characterName, Vector3 position)
+    {
+        print(characterName);
+
+        // El cliente se mueve con coordenadas de UI (anchoredPosition)
+        goombaEnemy.transform.position = new Vector3(position.x, position.y, 0);
+    }
+
+    public void UpdateDamage(string characterName)
+    {
+        GameObject playerObject = GetHostCharacterObject(characterName); // Intenta obtener el objeto est√°tico
+        print(characterName + " RECIBE DA√ëO");
+
+        if (playerObject == null)
+        {
+            if (!instancedCharacters.TryGetValue(characterName, out playerObject))
+            {
+                Debug.LogWarning($"UpdateDamage: No encuentro el objeto de '{characterName}' para aplicar da√±o.");
+                return;
+            }
+        }
+
+        CharacterStats stats = playerObject.GetComponent<CharacterStats>();
+        if (stats == null)
+        {
+            Debug.LogWarning($"UpdateDamage: El objeto '{characterName}' no tiene CharacterStats.");
+            return;
+        }
+
+        stats.TakeDamage(characterName);
+
+
+    }
 }

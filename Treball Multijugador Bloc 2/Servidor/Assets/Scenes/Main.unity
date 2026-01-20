@@ -407,6 +407,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 593113a3d30f77144a2efc86afa82820, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ip: 0.0.0.0
+  port: 0
 --- !u!4 &613691936
 Transform:
   m_ObjectHideFlags: 0
@@ -435,7 +437,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ipDisplay: {fileID: 1594868854}
-  idPort: 5005
+  idPort: 5004
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
