@@ -36,6 +36,7 @@ namespace Unity.Networking.Transport.Samples
 
 
 
+        
 
         void Start()
         {
@@ -46,6 +47,7 @@ namespace Unity.Networking.Transport.Samples
             }
 
             Instance = this;
+            ConnectToServer(ip, port);
             DontDestroyOnLoad(gameObject);
         }
 

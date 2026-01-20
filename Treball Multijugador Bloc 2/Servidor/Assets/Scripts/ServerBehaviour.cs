@@ -236,7 +236,7 @@ namespace Unity.Networking.Transport.Samples
 
 
                                 // Empezar el juego para el cliente
-
+                                
                                 m_Driver.BeginSend(myPipeline, m_Connections[i], out var writer0);
                                 writer0.WriteByte((byte)'G');
                                 m_Driver.EndSend(writer0);
@@ -246,6 +246,7 @@ namespace Unity.Networking.Transport.Samples
                                 {
                                     SendGameStartToAll(m_Connections.Length);
                                     SendCharacterPositionsToAll();
+                                    NotifyGameSceneReady();
                                     SceneManager.LoadScene("EscenaJuego", LoadSceneMode.Single);
                                     
                                 }
@@ -442,7 +443,7 @@ namespace Unity.Networking.Transport.Samples
         {
 
             // 1. Debe haber al menos 2 conexiones activas para empezar
-            if (m_Connections.Length < 1) // Test con 1 conexión
+            if (m_Connections.Length < 2) // Test con 1 conexión
             {
                 print("No estamos listos");
                 return false;

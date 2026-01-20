@@ -1390,9 +1390,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf58bc863e325f0488a9f2863212ce59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ip: 0.0.0.0
-  port: 0
-  CharacterManager: {fileID: 0}
+  ip: 192.168.56.1
+  port: 5004
+  perro: 0
+  creeper: 0
+  posXPerro: 0
+  posYPerro: 0
+  posXCreeper: 0
+  posYCreeper: 0
 --- !u!4 &999037132
 Transform:
   m_ObjectHideFlags: 0
