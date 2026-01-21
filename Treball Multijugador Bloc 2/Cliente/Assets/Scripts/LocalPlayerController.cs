@@ -1,60 +1,66 @@
-// LocalPlayerController.cs
-
 using UnityEngine;
 using Unity.Networking.Transport.Samples;
 
 public class LocalPlayerController : MonoBehaviour
 {
-    // Usaremos RectTransform en lugar de Transform
     private RectTransform rectTransform;
-    private Vector3 lastPosition;
+    private Vector2 lastPositionSent;
 
     public float movementSpeed = 5.0f;
-    public float positionUpdateThreshold = 0.1f; // Manda update solo si se mueve 10cm
+
+    [Header("Network Settings")]
+    [Tooltip("Distancia mínima para enviar (ahora mucho menor)")]
+    public float positionUpdateThreshold = 0.01f;
+    [Tooltip("Veces por segundo que enviamos la posición (30Hz es ideal)")]
+    public float sendRate = 0.033f;
+
+    private float lastSendTime;
 
     void Start()
     {
-        // 1. Obtener el RectTransform
         rectTransform = GetComponent<RectTransform>();
         if (rectTransform == null)
         {
-            Debug.LogError("LocalPlayerController requiere un RectTransform (Objeto UI).");
+            Debug.LogError("LocalPlayerController requiere un RectTransform.");
             enabled = false;
             return;
         }
-
-        // Leer la posición anclada local (la que se ve en el Inspector)
-        lastPosition = rectTransform.anchoredPosition;
+        lastPositionSent = rectTransform.anchoredPosition;
     }
 
     void Update()
     {
-        if (rectTransform == null) return;
-
-        // 1. Manejo de Input 
+        // 1. Manejo de Input y Movimiento
         float x = Input.GetAxis("Horizontal");
         float y = Input.GetAxis("Vertical");
+        Vector2 movement = new Vector2(x, y) * movementSpeed * Time.deltaTime;
 
-        Vector3 movement = new Vector3(x, y, 0) * movementSpeed * Time.deltaTime;
-
-        // 2. Aplicar el movimiento a la posición anclada
-        rectTransform.anchoredPosition += (Vector2)movement;
-
-        // 3. Comprobar y Enviar Actualización
-        // Comparamos con la posición anclada
-        if ((rectTransform.anchoredPosition - (Vector2)lastPosition).sqrMagnitude > positionUpdateThreshold * positionUpdateThreshold)
+        if (movement.sqrMagnitude > 0)
         {
-            // Enviamos la posición anclada (la Pos X, Pos Y del Inspector)
-            if (ClientBehaviour.Instance != null)
-            {
-                // Convertimos el Vector2 de anchoredPosition a Vector3 para el envío
-                ClientBehaviour.Instance.SendMovementUpdate(new Vector3(rectTransform.anchoredPosition.x, rectTransform.anchoredPosition.y, 0));
-            }
-            // Actualizamos la última posición enviada
-            lastPosition = rectTransform.anchoredPosition;
+            rectTransform.anchoredPosition += movement;
+        }
 
-            // --- DEBUG LOG ---
-            Debug.Log($"CLIENTE ENVÍA [M]: Posición {lastPosition.x:F2}, {lastPosition.y:F2}");
+        // 2. Lógica de Envío Optimizada
+        // Enviamos si: Ha pasado el tiempo suficiente Y (el jugador se ha movido algo)
+        if (Time.time - lastSendTime > sendRate)
+        {
+            float distanceMovedSqr = (rectTransform.anchoredPosition - lastPositionSent).sqrMagnitude;
+
+            if (distanceMovedSqr > positionUpdateThreshold * positionUpdateThreshold)
+            {
+                if (ClientBehaviour.Instance != null)
+                {
+                    // Enviamos la posición actual
+                    Vector3 posToSend = new Vector3(rectTransform.anchoredPosition.x, rectTransform.anchoredPosition.y, 0);
+                    ClientBehaviour.Instance.SendMovementUpdate(posToSend);
+
+                    // Actualizamos marcadores
+                    lastPositionSent = rectTransform.anchoredPosition;
+                    lastSendTime = Time.time;
+
+                    // Debug.Log($"Enviando a {sendRate}s: {posToSend}");
+                }
+            }
         }
     }
 }

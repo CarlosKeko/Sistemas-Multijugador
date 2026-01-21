@@ -35,8 +35,10 @@ namespace Unity.Networking.Transport.Samples
         public float posYCreeper = 0;
 
 
-
-        
+        private void Awake()
+        {
+            Application.runInBackground = true;
+        }
 
         void Start()
         {
@@ -148,6 +150,10 @@ namespace Unity.Networking.Transport.Samples
 
                         case 'R':
                             HandleRemoteMovement(ref stream);
+                            break;
+
+                        case 'T':
+                            HandleTriggerObject(ref stream);
                             break;
 
                         case 'X':
@@ -461,6 +467,31 @@ namespace Unity.Networking.Transport.Samples
             }
         }
 
+        void HandleTriggerObject(ref DataStreamReader stream)
+        {
+            string objectID = stream.ReadFixedString32().ToString();
+
+            // Buscamos el objeto en la escena por su ID (nombre)
+            GameObject obj = GameObject.Find(objectID);
+
+            print("Objeto a desactivar: " + obj);
+
+            if (obj != null)
+            {
+                ActivarPuerta script = obj.GetComponent<ActivarPuerta>();
+                if (script != null) script.DesactivarPuerta();
+            }
+        }
+
+        public void SendTriggerObject(string objectID)
+        {
+            if (!m_Connection.IsCreated) return;
+
+            m_Driver.BeginSend(myPipeline, m_Connection, out var writer);
+            writer.WriteByte((byte)'T'); // Código de mensaje
+            writer.WriteFixedString32(objectID);
+            m_Driver.EndSend(writer);
+        }
 
     }
 }

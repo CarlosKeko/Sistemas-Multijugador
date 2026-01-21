@@ -198,8 +198,6 @@ namespace Unity.Networking.Transport.Samples
                             m_Driver.BeginSend(myPipeline, m_Connections[i], out var writer);
                             m_Driver.EndSend(writer);
                         }
-
-
                         else if (messageID == 'C')
                         {
                             NetworkConnection clientConnection = m_Connections[i];
@@ -305,6 +303,15 @@ namespace Unity.Networking.Transport.Samples
                             BroadcastMovement(senderConnection, newPosition);
 
 
+                        }
+                        else if (messageID == 'T')
+                        {
+                            var objectID = stream.ReadFixedString32();
+                            // Consumir restos
+                            while (stream.Length > stream.GetBytesRead()) { stream.ReadByte(); }
+
+                            // Reenviar a TODOS
+                            BroadcastTrigger(objectID.ToString());
                         }
                     }
                     else if (cmd == NetworkEvent.Type.Disconnect)
@@ -619,6 +626,20 @@ namespace Unity.Networking.Transport.Samples
             }
         }
 
+
+        void BroadcastTrigger(string objectID)
+        {
+            for (int i = 0; i < m_Connections.Length; i++)
+            {
+                if (m_Connections[i].IsCreated)
+                {
+                    m_Driver.BeginSend(myPipeline, m_Connections[i], out var writer);
+                    writer.WriteByte((byte)'T');
+                    writer.WriteFixedString32(objectID);
+                    m_Driver.EndSend(writer);
+                }
+            }
+        }
     }
 
 }

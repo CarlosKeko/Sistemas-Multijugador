@@ -322,15 +322,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8653b049fabde95488148c92946f2046, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  smoothingSpeed: 15
   perroPersonaje: {fileID: 1993491676}
   creeperPersonaje: {fileID: 849317709}
   goombaEnemy: {fileID: 1903862973}
-  characterPrefabs:
-  - characterName: perroP
-    prefab: {fileID: 1993491676}
-  - characterName: creeperP
-    prefab: {fileID: 849317709}
-  LocalPlayerControlPrefab: {fileID: 1993491676}
 --- !u!4 &182183160
 Transform:
   m_ObjectHideFlags: 0
