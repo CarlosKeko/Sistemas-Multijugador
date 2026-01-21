@@ -13,6 +13,7 @@ public class PlayerMovement2D : MonoBehaviour
     Rigidbody2D rb;
     bool isGrounded = false;      // Para saber si est� tocando el suelo
 
+    public Camera camara;
 
 
     // Solo activar en el pj que hara doble salto
@@ -51,11 +52,21 @@ public class PlayerMovement2D : MonoBehaviour
             return;
         }
         // Solo activar para testeo
-        //enabled = true;
+        enabled = true;
 
         if (enabled)
         {
+            if (camara == null) camara = Camera.main;
 
+            var follow = camara.GetComponent<CameraFollow2D>();
+            if (follow != null)
+            {
+                follow.SetTarget(transform);
+            }
+            else
+            {
+                Debug.LogWarning("La cámara no tiene CameraFollow2D.");
+            }
         }
     }
 
