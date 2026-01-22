@@ -119,6 +119,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &2739018
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2739019}
+  m_Layer: 0
+  m_Name: LaunchProj
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2739019
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2739018}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.85, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1993491678}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &57406926
 GameObject:
   m_ObjectHideFlags: 0
@@ -326,6 +357,7 @@ MonoBehaviour:
   perroPersonaje: {fileID: 1993491676}
   creeperPersonaje: {fileID: 849317709}
   goombaEnemy: {fileID: 1903862973}
+  proyectilPrefab: {fileID: 2860592733944585866, guid: 46bb11fe5ad910c4ea90ffcd8edfd8c4, type: 3}
 --- !u!4 &182183160
 Transform:
   m_ObjectHideFlags: 0
@@ -2255,7 +2287,7 @@ GameObject:
   - component: {fileID: 849317716}
   m_Layer: 0
   m_Name: creeperP
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2275,9 +2307,9 @@ MonoBehaviour:
   speed: 8
   jumpForce: 8
   camara: {fileID: 330585545}
-  soloDobleSalto: 0
-  doubleJump: 0
-  disparar: 1
+  soloDobleSalto: 1
+  doubleJump: 1
+  disparar: 0
   ProjectilPrefab: {fileID: 2193285149675206380, guid: 46bb11fe5ad910c4ea90ffcd8edfd8c4, type: 3}
   LaunchOffset: {fileID: 778580199}
   positionUpdateThreshold: 0.5
@@ -2383,7 +2415,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!212 &849317714
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3740,11 +3772,11 @@ GameObject:
   - component: {fileID: 1993491683}
   m_Layer: 0
   m_Name: perroP
-  m_TagString: Player
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1993491677
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3814,6 +3846,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1760015484}
+  - {fileID: 2739019}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &1993491679
@@ -3934,11 +3967,11 @@ MonoBehaviour:
   speed: 8
   jumpForce: 8
   camara: {fileID: 330585545}
-  soloDobleSalto: 1
-  doubleJump: 1
-  disparar: 0
-  ProjectilPrefab: {fileID: 0}
-  LaunchOffset: {fileID: 0}
+  soloDobleSalto: 0
+  doubleJump: 0
+  disparar: 1
+  ProjectilPrefab: {fileID: 2193285149675206380, guid: 46bb11fe5ad910c4ea90ffcd8edfd8c4, type: 3}
+  LaunchOffset: {fileID: 2739019}
   positionUpdateThreshold: 0.5
 --- !u!114 &1993491683
 MonoBehaviour:

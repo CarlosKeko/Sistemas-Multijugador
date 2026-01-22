@@ -18,6 +18,9 @@ public class GameManager : MonoBehaviour
     public GameObject creeperPersonaje;
     public GameObject goombaEnemy;
 
+
+    public GameObject proyectilPrefab; // Asigna el prefab del proyectil aquí
+
     // Diccionario para personajes instanciados dinámicamente (si los hubiera)
     private Dictionary<string, GameObject> instancedCharacters = new Dictionary<string, GameObject>();
 
@@ -133,5 +136,11 @@ public class GameManager : MonoBehaviour
         {
             stats.TakeDamage(characterName);
         }
+    }
+    public void SpawnRemoteProjectile(Vector3 position, float direction)
+    {
+        GameObject go = Instantiate(proyectilPrefab, position, Quaternion.identity);
+        // Ajustar la dirección del proyectil remoto
+        go.transform.right = direction > 0 ? Vector2.right : Vector2.left;
     }
 }

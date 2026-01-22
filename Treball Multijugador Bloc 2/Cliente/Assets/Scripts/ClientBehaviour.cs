@@ -152,6 +152,10 @@ namespace Unity.Networking.Transport.Samples
                             HandleRemoteMovement(ref stream);
                             break;
 
+                        case 'S':
+                            HandleRemoteShoot(ref stream);
+                            break;
+
                         case 'T':
                             HandleTriggerObject(ref stream);
                             break;
@@ -483,6 +487,18 @@ namespace Unity.Networking.Transport.Samples
             }
         }
 
+        void HandleRemoteShoot(ref DataStreamReader stream)
+        {
+            float posX = stream.ReadFloat();
+            float posY = stream.ReadFloat();
+            float dir = stream.ReadFloat();
+
+            Vector3 spawnPos = new Vector3(posX, posY, 0);
+
+            // Llamamos al GameManager para que instancie el proyectil visualmente
+            GameManager.Instance.SpawnRemoteProjectile(spawnPos, dir);
+        }
+
         public void SendTriggerObject(string objectID)
         {
             if (!m_Connection.IsCreated) return;
@@ -490,6 +506,19 @@ namespace Unity.Networking.Transport.Samples
             m_Driver.BeginSend(myPipeline, m_Connection, out var writer);
             writer.WriteByte((byte)'T'); // Código de mensaje
             writer.WriteFixedString32(objectID);
+            m_Driver.EndSend(writer);
+        }
+
+
+        public void SendShoot(Vector3 position, float direction)
+        {
+            if (!m_Connection.IsCreated) return;
+
+            m_Driver.BeginSend(myPipeline, m_Connection, out var writer);
+            writer.WriteByte((byte)'S'); // Código de mensaje 'S'
+            writer.WriteFloat(position.x);
+            writer.WriteFloat(position.y);
+            writer.WriteFloat(direction); // 1 para derecha, -1 para izquierda
             m_Driver.EndSend(writer);
         }
 

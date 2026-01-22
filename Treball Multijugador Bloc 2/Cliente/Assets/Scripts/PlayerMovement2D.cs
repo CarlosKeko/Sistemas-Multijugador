@@ -72,11 +72,24 @@ public class PlayerMovement2D : MonoBehaviour
 
     void Update()
     {
-        // 1. Leer input horizontal
         float inputX = Input.GetAxisRaw("Horizontal");
         rb.linearVelocity = new Vector2(inputX * speed, rb.linearVelocity.y);
 
-        // 2. Lógica de reseteo al tocar el suelo
+
+
+        // --- LÓGICA DE GIRO ---
+        if (inputX > 0)
+        {
+            // Mirar a la derecha
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+        else if (inputX < 0)
+        {
+            // Mirar a la izquierda (escala negativa en X)
+            transform.localScale = new Vector3(-1, 1, 1);
+        }
+
+        // Lógica de reseteo al tocar el suelo
         if (isGrounded)
         {
             // Si estamos en el suelo, habilitamos la posibilidad de doble salto 
@@ -91,7 +104,7 @@ public class PlayerMovement2D : MonoBehaviour
             }
         }
 
-        // 3. Lógica de Salto
+        // Lógica de Salto
         if (Input.GetButtonDown("Jump"))
         {
             if (isGrounded)
@@ -111,8 +124,21 @@ public class PlayerMovement2D : MonoBehaviour
         {
             // Disparar un proyectil
             print("Disparar");
-            Instantiate(ProjectilPrefab, LaunchOffset.position, LaunchOffset.rotation);
-    }
+            
+        }
+        if (Input.GetButtonDown("Fire1") && disparar)
+        {
+            // 1. Instancia local (lo que ya tenías)
+            ProjectilBehaviour nuevoProyectil = Instantiate(ProjectilPrefab, LaunchOffset.position, LaunchOffset.rotation);
+            float direccion = transform.localScale.x > 0 ? 1f : -1f;
+            nuevoProyectil.transform.right = direccion > 0 ? Vector2.right : Vector2.left;
+
+            // 2. Notificar al servidor
+            if (ClientBehaviour.Instance != null)
+            {
+                ClientBehaviour.Instance.SendShoot(LaunchOffset.position, direccion);
+            }
+        }
     }
 
     void FixedUpdate()
@@ -180,5 +206,5 @@ public class PlayerMovement2D : MonoBehaviour
             isGrounded = false;
         }
     }
-        
+
 }

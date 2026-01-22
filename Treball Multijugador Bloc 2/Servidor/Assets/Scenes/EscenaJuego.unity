@@ -323,6 +323,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   smoothingSpeed: 15
+  proyectilPrefab: {fileID: 2860592733944585866, guid: 46bb11fe5ad910c4ea90ffcd8edfd8c4, type: 3}
   perroPersonaje: {fileID: 1993491676}
   creeperPersonaje: {fileID: 849317709}
   goombaEnemy: {fileID: 1903862973}

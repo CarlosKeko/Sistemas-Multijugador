@@ -313,6 +313,18 @@ namespace Unity.Networking.Transport.Samples
                             // Reenviar a TODOS
                             BroadcastTrigger(objectID.ToString());
                         }
+                        else if (messageID == 'S')
+                        {
+                            float px = stream.ReadFloat();
+                            float py = stream.ReadFloat();
+                            float dir = stream.ReadFloat();
+
+                            // Consumir restos
+                            while (stream.Length > stream.GetBytesRead()) { stream.ReadByte(); }
+
+                            // Reenviar a todos menos al que disparó
+                            BroadcastShoot(m_Connections[i], px, py, dir);
+                        }
                     }
                     else if (cmd == NetworkEvent.Type.Disconnect)
                     {
@@ -640,6 +652,23 @@ namespace Unity.Networking.Transport.Samples
                 }
             }
         }
+
+        void BroadcastShoot(NetworkConnection shooter, float px, float py, float dir)
+        {
+            for (int i = 0; i < m_Connections.Length; i++)
+            {
+                if (m_Connections[i].IsCreated && m_Connections[i] != shooter)
+                {
+                    m_Driver.BeginSend(myPipeline, m_Connections[i], out var writer);
+                    writer.WriteByte((byte)'S');
+                    writer.WriteFloat(px);
+                    writer.WriteFloat(py);
+                    writer.WriteFloat(dir);
+                    m_Driver.EndSend(writer);
+                }
+            }
+        }
+    
     }
 
 }
