@@ -143,6 +143,12 @@ namespace Unity.Networking.Transport.Samples
                             SceneManager.LoadScene("EscenaJuego");
                             break;
 
+                        case 'K':
+                            Debug.Log("Recibido: GAME OVER del servidor.");
+                            // Aquí puedes activar tu panel de derrota UI o desconectar directamente
+                            DisconnectAndRestart();
+                            break;
+
                         case 'P':
                             Debug.Log("Entrando en P");
                             HandleCharacterPositions(ref stream);
@@ -459,15 +465,25 @@ namespace Unity.Networking.Transport.Samples
 
         void HandleDamage(ref DataStreamReader stream)
         {
+            // 1. Leer el nombre que envió el servidor
             string remoteCharacterName = stream.ReadFixedString32().ToString();
 
+            // 2. Notificar al GameManager para que desactive el corazón visualmente
             if (GameManager.Instance != null)
             {
+                // Este método en el GameManager debe ejecutar la lógica de 
+                // ActualizarCorazonesVisuales que hicimos antes
                 GameManager.Instance.UpdateDamage(remoteCharacterName);
             }
             else
             {
-                print("Game manager es nullo");
+                Debug.LogError("GameManager es nulo al intentar procesar daño.");
+            }
+
+            // Consumir restos por seguridad
+            while (stream.Length > stream.GetBytesRead())
+            {
+                stream.ReadByte();
             }
         }
 
@@ -521,6 +537,23 @@ namespace Unity.Networking.Transport.Samples
             writer.WriteFloat(direction); // 1 para derecha, -1 para izquierda
             m_Driver.EndSend(writer);
         }
+
+
+        // En ClientBehaviour.cs añadir un método de limpieza
+        public void DisconnectAndRestart()
+        {
+            if (m_Driver.IsCreated)
+            {
+                m_Driver.Dispose();
+            }
+
+            // Muy importante: Al ser un Singleton, debemos limpiar la referencia
+            Instance = null;
+            Destroy(gameObject);
+
+            SceneManager.LoadScene("MenuPrincipal");
+        }
+
 
     }
 }

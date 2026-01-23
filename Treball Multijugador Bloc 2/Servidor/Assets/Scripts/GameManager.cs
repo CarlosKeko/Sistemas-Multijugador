@@ -20,8 +20,11 @@ public class GameManager : MonoBehaviour
     public GameObject creeperPersonaje;
     public GameObject goombaEnemy;
 
-    // Diccionario para personajes instanciados dinámicamente (si los hubiera)
+    // Diccionario para personajes instanciados dinámicamente
     private Dictionary<string, GameObject> instancedCharacters = new Dictionary<string, GameObject>();
+
+    public Dictionary<string, int> playerHealths = new Dictionary<string, int>();
+    public int startingHealth = 3;
 
     public struct CharacterSpawnData
     {
@@ -142,5 +145,59 @@ public class GameManager : MonoBehaviour
         GameObject go = Instantiate(proyectilPrefab, position, Quaternion.identity);
         // Ajustar la dirección del proyectil remoto
         go.transform.right = direction > 0 ? Vector2.right : Vector2.left;
+    }
+
+    public void CheckCollisionAndUpdateHealth(string name, Vector3 position)
+    {
+        string cleanName = name.Replace("(Clone)", "").Trim();
+
+        // Solo el servidor debería ejecutar esto
+        if (playerHealths.ContainsKey(cleanName))
+        {
+            playerHealths[cleanName] -= 1;
+
+            // --- ENVIAR AL SERVIDOR ---
+            // Debes crear este método en tu ServerBehaviour para enviar un paquete 
+            // con el nombre del jugador y su nueva salud a todos los clientes.
+            if (ServerBehaviour.Instance != null)
+            {
+                // Ejemplo: Enviamos un mensaje tipo 'H' (Health)
+                ServerBehaviour.Instance.BroadcastHealthUpdate(cleanName);
+            }
+            // ---------------------------
+
+            // Actualizar visualmente para el host/servidor
+            GameObject playerObj = GameObject.Find(name);
+            if (playerObj != null) ActualizarCorazonesVisuales(playerObj, playerHealths[cleanName]);
+        }
+    }
+
+    private void ActualizarCorazonesVisuales(GameObject player, int saludRestante)
+    {
+        // Buscamos el contenedor llamado "Hearts"
+        Transform heartsContainer = player.transform.Find("Hearts");
+
+        if (heartsContainer != null)
+        {
+            // Desactivamos el corazón correspondiente a la vida que acaba de perder.
+            // Si saludRestante es 2, desactivamos el tercer corazón (índice 2).
+            if (saludRestante < heartsContainer.childCount)
+            {
+                // Desactivamos el objeto "Triangle"
+                heartsContainer.GetChild(saludRestante).gameObject.SetActive(false);
+            }
+        }
+    }
+
+    void PlayerDied(string name)
+    {
+        Debug.Log($"{name} ha muerto.");
+
+        // Si eres el servidor, envía un mensaje de fin de juego
+        if (ServerBehaviour.Instance != null)
+        {
+            // Puedes usar un código nuevo como 'K' (GameOver/Kick)
+            ServerBehaviour.Instance.BroadcastGameOver();
+        }
     }
 }

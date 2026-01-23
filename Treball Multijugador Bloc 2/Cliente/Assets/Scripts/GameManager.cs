@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Unity.Networking.Transport.Samples;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +18,9 @@ public class GameManager : MonoBehaviour
     public GameObject perroPersonaje;
     public GameObject creeperPersonaje;
     public GameObject goombaEnemy;
+
+    public Dictionary<string, int> playerHealths = new Dictionary<string, int>();
+    public int startingHealth = 3;
 
 
     public GameObject proyectilPrefab; // Asigna el prefab del proyectil aquí
@@ -126,21 +130,107 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void UpdateDamage(string characterName)
+    // Dentro de GameManager.cs
+    public void UpdateDamage(string playerName)
     {
-        GameObject playerObject = GetCharacterObject(characterName);
-        if (playerObject == null) return;
+        // Buscamos el objeto en la escena (puede llamarse "perroP" o "perroP(Clone)")
+        GameObject playerObj = GameObject.Find(playerName);
 
-        CharacterStats stats = playerObject.GetComponent<CharacterStats>();
-        if (stats != null)
+
+        if (playerObj != null)
         {
-            stats.TakeDamage(characterName);
+            // Necesitamos saber cuánta vida le queda a este personaje específico
+            // Podemos usar el mismo diccionario que el servidor o simplemente
+            // contar cuántos corazones tiene activos actualmente.
+
+            Transform heartsContainer = playerObj.transform.Find("Hearts");
+            if (heartsContainer != null)
+            {
+                // Buscamos el último corazón activo y lo apagamos
+                for (int i = heartsContainer.childCount - 1; i >= 0; i--)
+                {
+                    GameObject corazón = heartsContainer.GetChild(i).gameObject;
+                    if (corazón.activeSelf)
+                    {
+                        corazón.SetActive(false);
+                        Debug.Log($"Corazón {i} quitado a {playerName}");
+                        break; // Solo quitamos uno por mensaje
+                    }
+                }
+            }
         }
     }
+
+
     public void SpawnRemoteProjectile(Vector3 position, float direction)
     {
         GameObject go = Instantiate(proyectilPrefab, position, Quaternion.identity);
         // Ajustar la dirección del proyectil remoto
         go.transform.right = direction > 0 ? Vector2.right : Vector2.left;
     }
+
+    public void CheckCollisionAndUpdateHealth(string name, Vector3 position)
+    {
+        // 1. Normalizar el nombre para encontrar el objeto en la escena
+        string cleanName = name.Replace("(Clone)", "").Trim();
+        GameObject playerObj = GameObject.Find(name); // Buscamos el objeto original por su nombre completo
+
+        if (playerObj == null) return;
+
+        // 2. Inicializar salud si es necesario
+        if (!playerHealths.ContainsKey(cleanName))
+        {
+            playerHealths.Add(cleanName, 3); // Empezamos con 3 vidas
+        }
+
+        // 3. Si aún tiene vida, restamos 1 y quitamos un corazón visual
+        if (playerHealths[cleanName] > 0)
+        {
+            playerHealths[cleanName] -= 1;
+            ActualizarCorazonesVisuales(playerObj, playerHealths[cleanName]);
+
+            Debug.Log($"A {cleanName} le quedan {playerHealths[cleanName]} vidas.");
+
+            if (playerHealths[cleanName] <= 0)
+            {
+                PlayerDied(cleanName);
+            }
+        }
+    }
+
+    private void ActualizarCorazonesVisuales(GameObject player, int saludRestante)
+    {
+        // Buscamos el contenedor llamado "Hearts"
+        Transform heartsContainer = player.transform.Find("Hearts");
+
+        if (heartsContainer != null)
+        {
+            // Desactivamos el corazón correspondiente a la vida que acaba de perder.
+            // Si saludRestante es 2, desactivamos el tercer corazón (índice 2).
+            if (saludRestante < heartsContainer.childCount)
+            {
+                // Desactivamos el objeto "Triangle"
+                heartsContainer.GetChild(saludRestante).gameObject.SetActive(false);
+            }
+        }
+    }
+
+
+
+    void PlayerDied(string name)
+    {
+        Debug.Log($"{name} ha muerto.");
+        // Lógica de respawn o fin de partida
+        SceneManager.LoadScene("MenuDerrota");
+    }
+
+    public void OnClickVolverAlMenu()
+    {
+        if (ClientBehaviour.Instance != null)
+        {
+            ClientBehaviour.Instance.DisconnectAndRestart();
+        }
+    }
+
+
 }

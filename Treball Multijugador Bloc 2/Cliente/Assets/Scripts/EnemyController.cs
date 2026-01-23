@@ -16,6 +16,9 @@ public class EnemyController : MonoBehaviour
     private float sendRate = 0.1f; // Enviar 10 veces por segundo (10 Hz)
     private float nextSendTime = 0f;
 
+    private float damageCooldown = 1.0f; // 1 segundo entre golpes
+    private float nextDamageTime = 0f;
+
     void Awake()
     {
         // Solo necesitamos este script si somos el servidor (o el Host)
@@ -56,36 +59,34 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerStay2D(Collider2D other)
     {
-
-        print(other.gameObject);
-        // Solo el servidor debe procesar esta lógica
+        // Solo el servidor procesa el daño
         if (!enabled) return;
 
         if (other.CompareTag("Player"))
         {
-            // 1. Obtener el nombre del objeto para el log
-            string playerName = other.gameObject.name;
-
-            // 2. Ejecutar la lógica de Colisión/Daño
-
-            // La posición exacta del jugador es la posición del objeto
-            Vector3 playerPosition = other.transform.position;
-
-            // LLAMADA AL GAMEMANAGER (Igual que en el mensaje 'M')
-            if (GameManager.Instance != null)
+            // COMPROBACIÓN: ¿Ha pasado suficiente tiempo desde el último golpe?
+            if (Time.time >= nextDamageTime)
             {
-                // Nota: Aquí estamos usando la posición y el nombre del Transform que COLISIONÓ.
-                // Si el objeto se llama "perroP(Clone)", necesitarás ajustarlo si usas la normalización de nombres.
+                string playerName = other.gameObject.name.Replace("(Clone)", "").Trim();
+                Vector3 playerPosition = other.transform.position;
 
-                //GameManager.Instance.CheckCollisionAndUpdateHealth(playerName, playerPosition);
+                if (GameManager.Instance != null)
+                {
+                    // Aplicar daño
+                    GameManager.Instance.CheckCollisionAndUpdateHealth(playerName, playerPosition);
 
-                // Opcional: Log para confirmar que la detección física funcionó
-                Debug.Log($"SERVIDOR TRIGGER: ¡Detección física de colisión con {playerName}!");
+                    // PROGRAMAR el próximo golpe: Tiempo actual + 1 segundo de espera
+                    nextDamageTime = Time.time + damageCooldown;
+
+                    Debug.Log($"Daño aplicado a {playerName}. Próximo daño disponible en: {damageCooldown}s");
+                }
             }
         }
     }
+
+
 
 
 

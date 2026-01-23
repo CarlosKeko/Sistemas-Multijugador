@@ -619,8 +619,7 @@ namespace Unity.Networking.Transport.Samples
 
         public void BroadcastHealthUpdate(string playerName)
         {
-            // Envía el mensaje 'L' (Vida/Health Update) a todos los clientes
-            print("Envio X");
+            // Usamos el código 'X' que ya está definido en tu switch del cliente
             for (int i = 0; i < m_Connections.Length; i++)
             {
                 NetworkConnection recipient = m_Connections[i];
@@ -629,13 +628,17 @@ namespace Unity.Networking.Transport.Samples
                 {
                     m_Driver.BeginSend(myPipeline, recipient, out var writer);
 
+                    // 1. Identificador de mensaje
                     writer.WriteByte((byte)'X');
 
+                    // 2. Nombre del jugador que ha sido golpeado
+                    // Esto permitirá que cada cliente busque ese objeto y le quite un corazón
                     writer.WriteFixedString32(playerName);
 
                     m_Driver.EndSend(writer);
                 }
             }
+            Debug.Log($"[Servidor] Notificando daño de {playerName} a todos los clientes.");
         }
 
 
@@ -668,7 +671,44 @@ namespace Unity.Networking.Transport.Samples
                 }
             }
         }
-    
+
+        public void ResetServerState()
+        {
+            // 1. Limpiar diccionarios de selección de personajes
+            // (Asumiendo que tienes uno donde guardas quién eligió a quién)
+            m_ClientSelections.Clear();
+
+            // 2. Si quieres desconectar a todos para empezar de cero:
+            for (int i = 0; i < m_Connections.Length; i++)
+            {
+                if (m_Connections[i].IsCreated)
+                {
+                    m_Driver.Disconnect(m_Connections[i]);
+                }
+            }
+
+            // 3. Volver a la escena de inicio o selección
+            SceneManager.LoadScene("MenuPrincipal");
+        }
+
+        public void BroadcastGameOver()
+        {
+            // Enviamos el código 'K' (GameOver) a todos los clientes
+            for (int i = 0; i < m_Connections.Length; i++)
+            {
+                if (m_Connections[i].IsCreated)
+                {
+                    m_Driver.BeginSend(myPipeline, m_Connections[i], out var writer);
+                    writer.WriteByte((byte)'K');
+                    m_Driver.EndSend(writer);
+                }
+            }
+
+            Debug.Log("GAME OVER enviado a todos los clientes. Reiniciando servidor...");
+
+            // Esperamos un momento o reiniciamos directamente
+            ResetServerState();
+        }
     }
 
 }
