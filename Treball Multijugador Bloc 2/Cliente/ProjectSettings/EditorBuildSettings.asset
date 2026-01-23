@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/EscenaJuego.unity
     guid: 64e41a9ff831dc04c94a2ebab2b0cbd1
+  - enabled: 1
+    path: Assets/Scenes/MenuDerrota.unity
+    guid: 3c1c1ffb23a417e4189e7212bbdf7dac
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
