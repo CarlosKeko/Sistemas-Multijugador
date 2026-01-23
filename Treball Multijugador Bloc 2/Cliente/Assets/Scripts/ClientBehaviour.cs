@@ -260,25 +260,26 @@ namespace Unity.Networking.Transport.Samples
 
         void HandleAcceptedSelection(ref DataStreamReader stream)
         {
-            string accepted = stream.ReadFixedString32().ToString();
-            Debug.Log($"[E] Selección ACEPTADA: {accepted}");
+            // El servidor nos dice EXACTAMENTE qué personaje nos ha asignado
+            string acceptedCharacter = stream.ReadFixedString32().ToString();
+            Debug.Log($"[E] El servidor me ha asignado: {acceptedCharacter}");
 
+            // Resetear ambos por si acaso
+            creeper = false;
+            perro = false;
 
-            // Logica para seleccion aceptada
-
-
-            if (personajeSeleccionado == "creeperP")
+            // Asignar según lo que diga el servidor, no según lo que recordamos
+            if (acceptedCharacter == "creeperP")
             {
                 creeper = true;
-                Debug.Log("CREEPER SELECCIONADO");
-
             }
-            if (personajeSeleccionado == "perroP")
+            else if (acceptedCharacter == "perroP")
             {
                 perro = true;
-                Debug.Log("PERRO SELECCIONADO");
-
             }
+
+            // Guardamos el nombre oficial para el resto del juego
+            personajeSeleccionado = acceptedCharacter;
 
 
             // Consumir cualquier byte restante en el paquete
