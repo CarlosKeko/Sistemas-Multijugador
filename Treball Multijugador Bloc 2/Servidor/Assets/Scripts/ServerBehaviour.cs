@@ -674,11 +674,15 @@ namespace Unity.Networking.Transport.Samples
 
         public void ResetServerState()
         {
-            // 1. Limpiar diccionarios de selección de personajes
-            // (Asumiendo que tienes uno donde guardas quién eligió a quién)
+
+            print("RESETEAR TODO");
+            // 1. Limpiar selecciones de personajes
             m_ClientSelections.Clear();
 
-            // 2. Si quieres desconectar a todos para empezar de cero:
+            // 2. Limpiar información de clientes
+            m_ClientInfo.Clear();
+
+            // 3. Desconectar a todos los clientes antes de cerrar el Driver
             for (int i = 0; i < m_Connections.Length; i++)
             {
                 if (m_Connections[i].IsCreated)
@@ -687,8 +691,13 @@ namespace Unity.Networking.Transport.Samples
                 }
             }
 
-            // 3. Volver a la escena de inicio o selección
-            SceneManager.LoadScene("MenuPrincipal");
+            // 4. Forzar la actualización para enviar las desconexiones
+            m_Driver.ScheduleUpdate().Complete();
+
+            // 5. Volver a la escena principal del servidor
+            SceneManager.LoadScene("Main");
+
+            Debug.Log("Servidor reiniciado y volviendo a la escena Main.");
         }
 
         public void BroadcastGameOver()

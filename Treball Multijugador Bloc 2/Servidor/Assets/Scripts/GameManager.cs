@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Unity.Networking.Transport.Samples;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -164,7 +165,6 @@ public class GameManager : MonoBehaviour
                 // Ejemplo: Enviamos un mensaje tipo 'H' (Health)
                 ServerBehaviour.Instance.BroadcastHealthUpdate(cleanName);
             }
-            // ---------------------------
 
             // Actualizar visualmente para el host/servidor
             GameObject playerObj = GameObject.Find(name);
@@ -196,8 +196,10 @@ public class GameManager : MonoBehaviour
         // Si eres el servidor, envía un mensaje de fin de juego
         if (ServerBehaviour.Instance != null)
         {
-            // Puedes usar un código nuevo como 'K' (GameOver/Kick)
+            SceneManager.LoadScene("Main");
+            // Puedes usar un código nuevo como 'K'
             ServerBehaviour.Instance.BroadcastGameOver();
+           
         }
     }
 }

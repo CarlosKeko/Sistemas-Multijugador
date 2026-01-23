@@ -145,7 +145,6 @@ namespace Unity.Networking.Transport.Samples
 
                         case 'K':
                             Debug.Log("Recibido: GAME OVER del servidor.");
-                            // Aquí puedes activar tu panel de derrota UI o desconectar directamente
                             DisconnectAndRestart();
                             break;
 
