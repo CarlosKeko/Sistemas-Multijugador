@@ -2529,7 +2529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 8
-  jumpForce: 16
+  jumpForce: 10
   camara: {fileID: 330585545}
   soloDobleSalto: 1
   doubleJump: 1
@@ -4659,7 +4659,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 8
-  jumpForce: 16
+  jumpForce: 10
   camara: {fileID: 330585545}
   soloDobleSalto: 0
   doubleJump: 0
