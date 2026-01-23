@@ -357,6 +357,7 @@ MonoBehaviour:
   perroPersonaje: {fileID: 1993491676}
   creeperPersonaje: {fileID: 849317709}
   goombaEnemy: {fileID: 1903862973}
+  startingHealth: 3
   proyectilPrefab: {fileID: 2860592733944585866, guid: 46bb11fe5ad910c4ea90ffcd8edfd8c4, type: 3}
 --- !u!4 &182183160
 Transform:
@@ -2285,13 +2286,14 @@ GameObject:
   - component: {fileID: 849317711}
   - component: {fileID: 849317710}
   - component: {fileID: 849317716}
+  - component: {fileID: 849317717}
   m_Layer: 0
   m_Name: creeperP
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &849317710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2507,6 +2509,52 @@ MonoBehaviour:
   - {fileID: 2090981514}
   - {fileID: 2107667957}
   - {fileID: 1697709660}
+--- !u!61 &849317717
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 849317709}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 2.12, y: 2.36, z: 1.43, w: 1.9}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 2, y: 2}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 2.56, y: 2.48}
+  m_EdgeRadius: 0
 --- !u!1 &881313768
 GameObject:
   m_ObjectHideFlags: 0
@@ -4044,13 +4092,14 @@ GameObject:
   - component: {fileID: 1993491681}
   - component: {fileID: 1993491682}
   - component: {fileID: 1993491683}
+  - component: {fileID: 1993491684}
   m_Layer: 0
   m_Name: perroP
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1993491677
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -4266,6 +4315,52 @@ MonoBehaviour:
   - {fileID: 1797728749}
   - {fileID: 2004233171}
   - {fileID: 159905995}
+--- !u!61 &1993491684
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1993491676}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 5.12, y: 5.12}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 2.47, y: 2.43}
+  m_EdgeRadius: 0
 --- !u!1 &2004233171
 GameObject:
   m_ObjectHideFlags: 0
